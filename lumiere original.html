@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lumière by Yasra — Luxury Candle House</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --mahogany:#2A0A0F;
+    --burgundy:#3D0F1A;
+    --mahroon:#5C1C28;
+    --rose-dark:#7A2535;
+    --gold:#C6A25D;
+    --gold-premium: #D4AF37;
+    --gold-light:#E2C98A;
+    --gold-pale:#F0E4C0;
+    --cream:#F5EDD8;
+    --warm-white:#FDF6EC;
+    --text-pale:rgba(248, 236, 206, 0.85);
+    --text-dim:rgba(158, 145, 111, 0.851);
+  }
+  html{scroll-behavior:smooth;cursor:none}
+  body{
+    background:#29080d;
+    color:var(--cream);
+    font-family:'Jost',sans-serif;
+    font-weight:300;
+    overflow-x:hidden;
+    line-height:1.8;
+  }
+
+  /* CUSTOM CURSOR */
+  .cursor{position:fixed;width:8px;height:8px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:transform 0.1s,opacity 0.3s;mix-blend-mode:screen}
+  .cursor-ring{position:fixed;width:36px;height:36px;border:1px solid rgba(198,162,93,0.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:all 0.15s ease;mix-blend-mode:screen}
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar{width:3px}
+  ::-webkit-scrollbar-track{background:var(--mahogany)}
+  ::-webkit-scrollbar-thumb{background:var(--gold-premium);border-radius:2px}
+
+  /* NAV */
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:100;
+    padding:2rem 4rem;
+    display:flex;justify-content:space-between;align-items:center;
+    mix-blend-mode:normal;
+    transition:background 0.5s,padding 0.4s;
+  }
+  nav.scrolled{background:rgba(26,5,8,0.92);backdrop-filter:blur(16px);padding:1.2rem 4rem;border-bottom:1px solid rgba(198,162,93,0.12)}
+  .nav-logo{font-family:'Cormorant Garamond',serif;font-size:1.05rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--gold-light);font-weight:300;text-decoration:none}
+  .nav-links{display:flex;gap:3rem;list-style:none}
+  .nav-links a{font-size:0.7rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--text-dim);text-decoration:none;transition:color 0.3s;font-weight:300}
+  .nav-links a:hover{color:var(--gold-light)}
+  .nav-cart{font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-dim);background:none;border:none;color:var(--text-pale);cursor:none;font-family:'Jost',sans-serif;font-weight:300}
+
+  /* HERO */
+  #hero{
+    position:relative;height:100vh;width:100%;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .hero-bg{
+    position:absolute;inset:0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 40%, rgba(92,28,40,0.6) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 80% at 20% 60%, rgba(61,15,26,0.8) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 80% at 80% 40%, rgba(42,10,15,0.9) 0%, transparent 60%),
+      linear-gradient(160deg, #0D0205 0%, #1A0508 25%, #2A0A0F 50%, #1A0508 75%, #0D0205 100%);
+  }
+  .velvet-texture{
+    position:absolute;inset:0;opacity:0.08;
+    background-image:
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0px, transparent 1px, transparent 3px),
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.02) 0px, transparent 1px, transparent 3px);
+    background-size:4px 4px;
+  }
+  .silk-sheen{
+    position:absolute;inset:0;
+    background:
+      radial-gradient(ellipse 30% 50% at 35% 50%, rgba(198,162,93,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 20% 40% at 65% 30%, rgba(226,201,138,0.03) 0%, transparent 50%);
+    animation:sheen 8s ease-in-out infinite alternate;
+  }
+  @keyframes sheen{
+    0%{opacity:0.6;transform:translateX(-1%)}
+    100%{opacity:1;transform:translateX(1%)}
+  }
+
+  /* CANVAS */
+  #canvasWrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  #candleCanvas{opacity:0;transition:opacity 1.5s ease}
+  #candleCanvas.loaded{opacity:1}
+
+  /* PARTICLES */
+  #particles{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+  .particle{
+    position:absolute;width:3px;height:3px;
+    background:var(--gold);
+    border-radius:70%;
+    opacity:0;
+    animation:floatUp var(--dur) var(--delay) infinite ease-out;
+  }
+  @keyframes floatUp{
+    0%{opacity:0;transform:translateY(0) translateX(0) scale(0.5)}
+    20%{opacity:var(--peak)}
+    80%{opacity:var(--peak)}
+    100%{opacity:0;transform:translateY(var(--rise)) translateX(var(--drift)) scale(1.5)}
+  }
+
+  /* HERO TEXT */
+  .hero-text{
+    position:relative;z-index:10;text-align:center;
+    opacity:0;animation:heroReveal 2.5s 0.8s ease forwards;
+  }
+  @keyframes heroReveal{
+    0%{opacity:0;filter:blur(8px);transform:translateY(20px)}
+    100%{opacity:1;filter:blur(0);transform:translateY(0)}
+  }
+  .hero-eyebrow{
+    font-size:0.7rem;letter-spacing:0.5em;text-transform:uppercase;
+    color:var(--gold);margin-bottom:2rem;
+    display:flex;align-items:center;justify-content:center;gap:1.5rem;
+  }
+  .hero-eyebrow::before,.hero-eyebrow::after{content:'';width:50px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+  .hero-title{
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(3.5rem,8vw,7rem);
+    font-weight:300;line-height:1;letter-spacing:0.08em;
+    color:var(--cream);margin-bottom:0.2rem;
+  }
+  .hero-title span{color:var(--gold-light);font-style:italic;font-size:clamp(3.2rem,7vw,6rem);}
+  .hero-sub{
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(1rem,2vw,1.4rem);font-weight:300;
+    font-style:italic;color:var(--text-pale);
+    letter-spacing:0.15em;margin-bottom:3.5rem;
+    opacity:0;animation:heroReveal 2s 1.8s ease forwards;
+  }
+  .hero-sub1{
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(1rem,2vw,1.4rem);font-weight:300;
+    font-style:italic;color:var(--text-pale);
+    letter-spacing:0.15em;margin-bottom:3.5rem;
+    opacity:0;animation:heroReveal 2s 1.8s ease forwards;
+  }
+  .hero-cta{
+    display:flex;gap:2rem;justify-content:center;align-items:center;
+    opacity:0;animation:heroReveal 2s 2.5s ease forwards;
+  }
+  .btn-gold{
+    display:inline-block;padding:1rem 2.8rem;
+    font-size:0.65rem;letter-spacing:0.3em;text-transform:uppercase;
+    border:1px solid var(--gold);color:var(--gold);
+    text-decoration:none;font-family:'Jost',sans-serif;font-weight:300;
+    background:transparent;cursor:none;
+    transition:all 0.5s ease;position:relative;overflow:hidden;
+  }
+  .btn-gold::before{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(135deg,transparent 30%,rgba(198,162,93,0.12),transparent 70%);
+    transform:translateX(-100%);transition:transform 0.6s ease;
+  }
+  .btn-gold:hover::before{transform:translateX(100%)}
+  .btn-gold:hover{background:rgba(198,162,93,0.08);box-shadow:0 0 30px rgba(198,162,93,0.15);color:var(--gold-light)}
+  .btn-ghost{
+    font-size:0.65rem;letter-spacing:0.25em;text-transform:uppercase;
+    color:var(--text-dim);text-decoration:none;font-family:'Jost',sans-serif;font-weight:300;cursor:none;
+    display:inline-flex;align-items:center;gap:0.8rem;
+    transition:color 0.3s;
+  }
+  .btn-ghost::after{content:'';width:30px;height:1px;background:currentColor;transition:width 0.3s}
+  .btn-ghost:hover{color:var(--cream)}
+  .btn-ghost:hover::after{width:50px}
+
+  /* SCROLL INDICATOR */
+  .scroll-hint{
+    position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);
+    display:flex;flex-direction:column;align-items:center;gap:0.6rem;
+    opacity:0;animation:heroReveal 2s 3.2s ease forwards;
+  }
+  .scroll-hint span{font-size:0.55rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--text-dim)}
+  .scroll-line{width:1px;height:50px;background:linear-gradient(to bottom,var(--gold),transparent);animation:scrollDrop 2s 4s infinite ease}
+  @keyframes scrollDrop{
+    0%{transform:scaleY(0);transform-origin:top;opacity:1}
+    50%{transform:scaleY(1);transform-origin:top;opacity:1}
+    100%{transform:scaleY(1);transform-origin:bottom;opacity:0}
+  }
+
+  /* SECTIONS */
+  section{position:relative}
+  .section-bg{
+    position:absolute;inset:0;
+    background:
+      linear-gradient(180deg,#1A0508 0%,#2d0b17 40%,#1A0508 100%);
+  }
+  .section-bg-alt{
+    position:absolute;inset:0;
+    background:
+      radial-gradient(ellipse 100% 50% at 50% 50%, rgba(42,10,15,0.8) 0%, #150406 100%);
+  }
+
+  /* MARQUEE */
+  .marquee-wrap{
+    padding:2.5rem 0;
+    background:linear-gradient(90deg,#200810,#2e0a10,#200810);
+    border-top:1px solid rgba(198,162,93,0.1);
+    border-bottom:1px solid rgba(198,162,93,0.1);
+    overflow:hidden;white-space:nowrap;
+  }
+  .marquee-track{display:inline-flex;animation:marquee 25s linear infinite}
+  .marquee-item{
+    font-family:'Cormorant Garamond',serif;font-weight:300;
+    font-size:0.85rem;letter-spacing:0.35em;text-transform:uppercase;
+    color:var(--gold);padding:0 3rem;
+  }
+  .marquee-dot{color:var(--text-dim)}
+  @keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+  /* PRODUCTS */
+  #collection{padding:8rem 0 10rem;position:relative;overflow:hidden}
+  .section-label{
+    text-align:center;margin-bottom:5rem;
+  }
+  .label-eyebrow{
+    font-size:0.6rem;letter-spacing:0.5em;text-transform:uppercase;
+    color:var(--gold);margin-bottom:1.2rem;
+    display:flex;align-items:center;justify-content:center;gap:1.5rem;
+  }
+  .label-eyebrow::before,.label-eyebrow::after{content:'';width:30px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+  .section-title{
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(2.2rem,4vw,3.5rem);font-weight:300;
+    letter-spacing:0.05em;color:var(--cream);
+    line-height:1.1;
+  }
+  .section-title em{font-style:italic;color:var(--gold-light)}
+  .product-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);
+    gap:3px;max-width:1200px;margin:0 auto;padding:0 2rem;
+  }
+  .product-card{
+    position:relative;overflow:hidden;cursor:none;
+    aspect-ratio:2/3;
+    background:var(--burgundy);
+  }
+  .product-card::before{
+    content:'';position:absolute;inset:0;
+    border:1px solid transparent;
+    transition:border-color 0.5s,box-shadow 0.5s;z-index:2;
+  }
+  .product-card:hover::before{
+    border-color:rgba(198,162,93,0.35);
+    box-shadow:inset 0 0 60px rgba(198,162,93,0.04),0 0 40px rgba(198,162,93,0.08);
+  }
+  .card-bg{
+    position:absolute;inset:0;
+    transition:transform 0.8s cubic-bezier(0.25,0.1,0.25,1);
+  }
+  .product-card:hover .card-bg{transform:scale(1.04)}
+  .card-bg-1{background:radial-gradient(ellipse 80% 60% at 50% 30%,#4A1520 0%,#1E080C 60%,#0D0205 100%)}
+  .card-bg-2{background:radial-gradient(ellipse 80% 60% at 50% 30%,#1A1A1A 0%,#0D0D0D 60%,#030303 100%)}
+  .card-bg-3{background:radial-gradient(ellipse 80% 60% at 50% 30%,#3D2E1A 0%,#1E180E 60%,#0D0A05 100%)}
+  .card-candle{
+    position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+    width:60%;height:70%;
+    display:flex;align-items:flex-end;justify-content:center;
+    transition:transform 0.6s ease;
+  }
+  .product-card:hover .card-candle{transform:translateX(-50%) translateY(-8px)}
+  .card-glow{
+    position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:200px;height:200px;border-radius:50%;
+    opacity:0;transition:opacity 0.5s;
+    pointer-events:none;z-index:1;
+  }
+  .glow-1{background:radial-gradient(circle,rgba(198,100,80,0.25) 0%,transparent 70%)}
+  .glow-2{background:radial-gradient(circle,rgba(150,150,180,0.2) 0%,transparent 70%)}
+  .glow-3{background:radial-gradient(circle,rgba(200,160,100,0.2) 0%,transparent 70%)}
+  .product-card:hover .card-glow{opacity:1}
+  .card-info{
+    position:absolute;bottom:0;left:0;right:0;
+    padding:2rem 1.8rem 2.2rem;
+    background:linear-gradient(transparent,rgba(13,2,5,0.95));
+    z-index:3;transform:translateY(40px);opacity:0;
+    transition:all 0.5s cubic-bezier(0.25,0.1,0.25,1);
+  }
+  .product-card:hover .card-info{transform:translateY(0);opacity:1}
+  .card-name{
+    font-family:'Cormorant Garamond',serif;
+    font-size:1.4rem;font-weight:300;letter-spacing:0.05em;
+    color:var(--cream);margin-bottom:0.3rem;
+  }
+  .card-note{font-size:0.65rem;letter-spacing:0.2em;color:var(--gold);text-transform:uppercase;margin-bottom:1rem}
+  .card-price{font-size:0.85rem;color:var(--text-pale);letter-spacing:0.1em}
+  .card-add{
+    margin-top:1rem;width:100%;padding:0.7rem;
+    background:transparent;border:1px solid rgba(198,162,93,0.3);
+    color:var(--gold);font-family:'Jost',sans-serif;
+    font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;
+    cursor:none;transition:all 0.3s;
+  }
+  .card-add:hover{background:rgba(198,162,93,0.1);border-color:var(--gold)}
+  .card-label{
+    position:absolute;top:1.5rem;left:1.5rem;z-index:3;
+    font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;
+    color:var(--gold);padding:0.4rem 0.8rem;
+    border:1px solid rgba(198,162,93,0.25);
+    background:rgba(13,2,5,0.6);
+  }
+
+  /* CANDLE SVG IN CARD */
+  .candle-svg{width:100%;height:100%}
+
+  /* ABOUT */
+  #about{padding:10rem 0;position:relative;overflow:hidden}
+  .about-inner{
+    max-width:900px;margin:0 auto;padding:0 4rem;
+    display:grid;grid-template-columns:1fr 1fr;gap:8rem;align-items:center;
+  }
+  .about-text .label-eyebrow{justify-content:flex-start}
+  .about-quote{
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(1.6rem,3vw,2.4rem);font-weight:300;
+    font-style:italic;line-height:1.4;color:var(--cream);
+    margin:1.5rem 0;
+  }
+  .about-quote span{color:var(--gold-light)}
+  .about-body{font-size:0.8rem;color:var(--text-dim);line-height:2;letter-spacing:0.05em}
+  .about-accent{
+    display:flex;flex-direction:column;gap:3rem;
+  }
+  .accent-stat{border-top:1px solid rgba(198,162,93,0.15);padding-top:1.5rem}
+  .accent-num{
+    font-family:'Cormorant Garamond',serif;
+    font-size:3rem;font-weight:300;color:var(--gold);line-height:1;
+  }
+  .accent-label{font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--text-dim);margin-top:0.4rem}
+
+  /* GIFT */
+  #gifting{padding:8rem 0;position:relative;overflow:hidden}
+  .gift-inner{max-width:1100px;margin:0 auto;padding:0 4rem}
+  .gift-layout{display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:center}
+  .gift-visual{
+    position:relative;aspect-ratio:1;
+    background:radial-gradient(ellipse 80% 80% at 50% 40%,#3D1520 0%,#1A0508 100%);
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+  }
+  .gift-visual::before{
+    content:'';position:absolute;inset:1px;
+    border:1px solid rgba(198,162,93,0.15);
+  }
+  .gift-box{
+    position:relative;width:70%;height:70%;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .gift-content .section-label{text-align:left;margin-bottom:2.5rem}
+  .gift-content .label-eyebrow{justify-content:flex-start}
+  .gift-body{font-size:0.8rem;color:var(--text-dim);line-height:2;letter-spacing:0.05em;margin-bottom:2.5rem}
+  .bundle-list{display:flex;flex-direction:column;gap:1rem;margin-bottom:3rem}
+  .bundle-item{
+    display:flex;align-items:center;gap:1.2rem;
+    padding:1rem 1.2rem;
+    border:1px solid rgba(198,162,93,0.1);
+    background:rgba(198,162,93,0.02);
+    transition:all 0.3s;
+  }
+  .bundle-item:hover{border-color:rgba(198,162,93,0.25);background:rgba(198,162,93,0.04)}
+  .bundle-icon{width:36px;height:36px;border-radius:50%;background:rgba(198,162,93,0.08);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .bundle-icon svg{width:16px;height:16px;stroke:var(--gold)}
+  .bundle-name{font-size:0.75rem;letter-spacing:0.1em;color:var(--text-pale)}
+  .bundle-price{margin-left:auto;font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--gold)}
+
+  /* SOUND TOGGLE */
+  .sound-toggle{
+    position:fixed;bottom:2rem;right:2rem;z-index:100;
+    width:44px;height:44px;border-radius:50%;
+    background:rgba(26,5,8,0.8);border:1px solid rgba(198,162,93,0.2);
+    display:flex;align-items:center;justify-content:center;
+    cursor:none;transition:all 0.3s;backdrop-filter:blur(8px);
+  }
+  .sound-toggle:hover{border-color:rgba(198,162,93,0.5);box-shadow:0 0 20px rgba(198,162,93,0.1)}
+  .sound-toggle svg{width:16px;height:16px;stroke:var(--gold);fill:none}
+
+  /* CTA SECTION */
+  #cta{padding:10rem 0;position:relative;overflow:hidden;text-align:center}
+  .cta-inner{position:relative;z-index:2;max-width:700px;margin:0 auto;padding:0 2rem}
+  .cta-title{
+    font-family:'Cormorant Garamond',serif;
+    font-size:clamp(2.8rem,6vw,5rem);font-weight:300;
+    line-height:1.1;letter-spacing:0.04em;color:var(--cream);margin-bottom:1.5rem;
+  }
+  .cta-title em{font-style:italic;color:var(--gold-light)}
+  .cta-sub{font-size:0.8rem;color:var(--text-dim);letter-spacing:0.1em;margin-bottom:3.5rem;line-height:2}
+  .cta-btns{display:flex;gap:2rem;justify-content:center;flex-wrap:wrap}
+
+  /* FOOTER */
+  footer{
+    padding:4rem;
+    border-top:1px solid rgba(198,162,93,0.08);
+    background:linear-gradient(to bottom,#1A0508,#0D0205);
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:2rem;
+  }
+  .footer-brand{font-family:'Cormorant Garamond',serif;font-size:0.9rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);font-weight:300}
+  .footer-tagline{font-size:0.6rem;letter-spacing:0.2em;color:var(--text-dim);text-transform:uppercase;margin-top:0.4rem}
+  .footer-social{display:flex;gap:1.5rem}
+  .social-link{
+    width:36px;height:36px;border:1px solid rgba(198,162,93,0.15);
+    border-radius:50%;display:flex;align-items:center;justify-content:center;
+    text-decoration:none;transition:all 0.3s;cursor:none;
+  }
+  .social-link:hover{border-color:rgba(198,162,93,0.5);background:rgba(198,162,93,0.05)}
+  .social-link svg{width:14px;height:14px;stroke:var(--gold);fill:none}
+  .footer-copy{font-size:0.55rem;letter-spacing:0.2em;color:var(--text-dim);text-transform:uppercase}
+
+  /* REVEAL ANIMATIONS */
+  .reveal{opacity:0;transform:translateY(30px);transition:opacity 0.9s ease,transform 0.9s ease}
+  .reveal.visible{opacity:1;transform:translateY(0)}
+  .reveal-delay-1{transition-delay:0.15s}
+  .reveal-delay-2{transition-delay:0.3s}
+  .reveal-delay-3{transition-delay:0.45s}
+
+  /* LOADING */
+  #loader{
+    position:fixed;inset:0;z-index:9999;
+    background:#0D0205;
+    display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1.5rem;
+    transition:opacity 0.8s,visibility 0.8s;
+  }
+  #loader.done{opacity:0;visibility:hidden}
+  .loader-brand{font-family:'Cormorant Garamond',serif;font-size:1.2rem;letter-spacing:0.5em;text-transform:uppercase;color:var(--gold);font-weight:300}
+  .loader-bar{width:120px;height:1px;background:rgba(198,162,93,0.15);position:relative;overflow:hidden}
+  .loader-fill{position:absolute;top:0;left:0;height:100%;background:var(--gold);width:0;animation:loadFill 1.6s ease forwards}
+  @keyframes loadFill{to{width:100%}}
+
+  /* CANDLE FLAME */
+  .flame{
+    position:absolute;
+    width:8px;height:20px;
+    background:radial-gradient(ellipse at 50% 80%,#fff 0%,#FFD166 20%,#FF8C42 50%,transparent 80%);
+    border-radius:50% 50% 20% 20%;
+    transform-origin:50% 100%;
+    animation:flicker 2s ease-in-out infinite;
+    filter:blur(0.5px);
+    box-shadow:0 0 8px 2px rgba(255,180,60,0.4),0 0 20px 5px rgba(255,120,30,0.2);
+  }
+  @keyframes flicker{
+    0%,100%{transform:scaleX(1) scaleY(1) rotate(-1deg)}
+    25%{transform:scaleX(0.9) scaleY(1.05) rotate(1deg)}
+    50%{transform:scaleX(1.05) scaleY(0.98) rotate(-0.5deg)}
+    75%{transform:scaleX(0.95) scaleY(1.03) rotate(1.5deg)}
+  }
+  .flame-glow{
+    position:absolute;
+    width:40px;height:40px;
+    background:radial-gradient(circle,rgba(255,180,60,0.35) 0%,transparent 70%);
+    border-radius:50%;
+    top:-30px;left:-16px;
+    animation:glowPulse 2s ease-in-out infinite;
+  }
+  @keyframes glowPulse{
+    0%,100%{opacity:0.8;transform:scale(1)}
+    50%{opacity:1;transform:scale(1.2)}
+  }
+
+  /* MOBILE */
+  @media(max-width:768px){
+    nav{padding:1.5rem 1.5rem}
+    nav.scrolled{padding:1rem 1.5rem}
+    .nav-links{display:none}
+    .product-grid{grid-template-columns:1fr;gap:2px;padding:0 1rem}
+    .about-inner{grid-template-columns:1fr;gap:4rem;padding:0 2rem}
+    .about-accent{flex-direction:row;gap:2rem}
+    .gift-layout{grid-template-columns:1fr;gap:3rem;padding:0 1.5rem}
+    .gift-inner{padding:0}
+    footer{padding:2.5rem;flex-direction:column;align-items:flex-start}
+    .hero-text{padding:0 1.5rem}
+    #collection{padding:6rem 0 7rem}
+    #about{padding:6rem 0}
+    #gifting{padding:6rem 0}
+    #cta{padding:7rem 0}
+    .cta-btns{flex-direction:column;align-items:center}
+  }
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-brand">Lumière</div>
+  <div class="loader-bar"><div class="loader-fill"></div></div>
+</div>
+
+<!-- CURSOR -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo">Lumière by Yasra</a>
+  <ul class="nav-links">
+    <li><a href="#collection">Collection</a></li>
+    <li><a href="#about">House</a></li>
+    <li><a href="#gifting">Gifting</a></li>
+  </ul>
+  <button class="nav-cart">Bag (0)</button>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="velvet-texture"></div>
+  <div class="silk-sheen"></div>
+  <div id="particles"></div>
+
+  <div class="hero-text">
+    <div class="hero-eyebrow">A Luxury Candle House</div>
+    <p class="hero-sub"></p>
+    <h1 class="hero-title">LUMIÈRE<br><span>by Yasra</span></h1>
+    <p class="hero-sub"></p>
+    <p class="hero-sub1">"a quiet glow for your moments"</p>
+    <div class="hero-cta">
+      <a href="#collection" class="btn-gold">Shop Collection</a>
+      <a href="#about" class="btn-ghost">Our Story</a>
+    </div>
+  </div>
+
+  <!-- 3D Candle visualization -->
+  <div id="canvasWrap">
+    <canvas id="candleCanvas" width="600" height="700"></canvas>
+  </div>
+
+  <div class="scroll-hint">
+    <span>Discover</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track">
+    <span class="marquee-item">Midnight Oud <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Noir Essence <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Vanilla Veil <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Luxury Gifting <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Curated for Moments <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Hand-Poured in Small Batches <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Midnight Oud <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Noir Essence <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Vanilla Veil <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Luxury Gifting <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Curated for Moments <span class="marquee-dot">✦</span></span>
+    <span class="marquee-item">Hand-Poured in Small Batches <span class="marquee-dot">✦</span></span>
+  </div>
+</div>
+
+<!-- COLLECTION -->
+<section id="collection">
+  <div class="section-bg"></div>
+  <div style="position:relative;z-index:2">
+    <div class="section-label reveal">
+      <div class="label-eyebrow">Signature Collection</div>
+      <h2 class="section-title">The <em>Art</em> of Fragrance</h2>
+    </div>
+    <div class="product-grid">
+      <!-- Card 1: Midnight Oud -->
+      <div class="product-card reveal">
+        <div class="card-bg card-bg-1"></div>
+        <div class="card-glow glow-1"></div>
+        <div class="card-label">Bestseller</div>
+        <div class="card-candle">
+          <svg viewBox="0 0 160 280" class="candle-svg" xmlns="http://www.w3.org/2000/svg">
+            <!-- Flame -->
+            <ellipse cx="80" cy="35" rx="12" ry="18" fill="url(#flame1)" opacity="0.95"/>
+            <ellipse cx="80" cy="42" rx="6" ry="10" fill="rgba(255,255,255,0.8)"/>
+            <ellipse cx="80" cy="50" rx="18" ry="22" fill="url(#glow1)" opacity="0.5"/>
+            <!-- Wick -->
+            <rect x="79" y="50" width="2" height="12" fill="#333" rx="1"/>
+            <!-- Wax Pool -->
+            <ellipse cx="80" cy="68" rx="28" ry="6" fill="rgba(80,20,30,0.8)"/>
+            <!-- Candle Body -->
+            <rect x="52" y="68" width="56" height="170" rx="4" fill="url(#body1)"/>
+            <!-- Jar highlight -->
+            <rect x="52" y="68" width="12" height="170" rx="4" fill="rgba(255,255,255,0.04)"/>
+            <!-- Label -->
+            <rect x="62" y="140" width="36" height="60" rx="2" fill="rgba(198,162,93,0.1)" stroke="rgba(198,162,93,0.3)" stroke-width="0.5"/>
+            <text x="80" y="162" text-anchor="middle" fill="rgba(198,162,93,0.7)" font-size="5" font-family="serif" letter-spacing="1">LUMIÈRE</text>
+            <text x="80" y="174" text-anchor="middle" fill="rgba(198,162,93,0.5)" font-size="4" font-family="serif" letter-spacing="0.5">by Yasra</text>
+            <!-- Base -->
+            <rect x="48" y="236" width="64" height="8" rx="3" fill="url(#base1)"/>
+            <defs>
+              <radialGradient id="flame1" cx="50%" cy="80%" r="50%">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="30%" stop-color="#FFD166"/>
+                <stop offset="70%" stop-color="#FF6B35"/>
+                <stop offset="100%" stop-color="transparent"/>
+              </radialGradient>
+              <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#FF8C42" stop-opacity="0.6"/>
+                <stop offset="100%" stop-color="transparent"/>
+              </radialGradient>
+              <linearGradient id="body1" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#1E0810"/>
+                <stop offset="30%" stop-color="#3D1520"/>
+                <stop offset="70%" stop-color="#3D1520"/>
+                <stop offset="100%" stop-color="#1E0810"/>
+              </linearGradient>
+              <linearGradient id="base1" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#150510"/>
+                <stop offset="50%" stop-color="#2A0A15"/>
+                <stop offset="100%" stop-color="#150510"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="card-info">
+          <div class="card-name">Midnight Oud</div>
+          <div class="card-note">Dark Rose · Oud · Amber</div>
+          <div class="card-price">PKR 3,200</div>
+          <button class="card-add" onclick="addToCart(this,'Midnight Oud')">Add to Bag</button>
+        </div>
+      </div>
+
+      <!-- Card 2: Noir Essence -->
+      <div class="product-card reveal reveal-delay-1">
+        <div class="card-bg card-bg-2"></div>
+        <div class="card-glow glow-2"></div>
+        <div class="card-label">New</div>
+        <div class="card-candle">
+          <svg viewBox="0 0 160 280" class="candle-svg" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="80" cy="35" rx="10" ry="16" fill="url(#flame2)" opacity="0.9"/>
+            <ellipse cx="80" cy="41" rx="5" ry="9" fill="rgba(255,255,255,0.75)"/>
+            <ellipse cx="80" cy="48" rx="16" ry="20" fill="url(#glow2)" opacity="0.45"/>
+            <rect x="79" y="48" width="2" height="14" fill="#222" rx="1"/>
+            <ellipse cx="80" cy="68" rx="26" ry="5" fill="rgba(30,30,30,0.8)"/>
+            <rect x="54" y="68" width="52" height="175" rx="4" fill="url(#body2)"/>
+            <rect x="54" y="68" width="10" height="175" rx="4" fill="rgba(255,255,255,0.03)"/>
+            <rect x="63" y="145" width="34" height="55" rx="2" fill="rgba(200,200,220,0.06)" stroke="rgba(200,200,220,0.2)" stroke-width="0.5"/>
+            <text x="80" y="165" text-anchor="middle" fill="rgba(200,200,220,0.5)" font-size="5" font-family="serif" letter-spacing="1">LUMIÈRE</text>
+            <text x="80" y="176" text-anchor="middle" fill="rgba(200,200,220,0.35)" font-size="4" font-family="serif" letter-spacing="0.5">by Yasra</text>
+            <rect x="50" y="241" width="60" height="7" rx="3" fill="url(#base2)"/>
+            <defs>
+              <radialGradient id="flame2" cx="50%" cy="80%" r="50%">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="30%" stop-color="#E8ECFF"/>
+                <stop offset="70%" stop-color="#8090FF"/>
+                <stop offset="100%" stop-color="transparent"/>
+              </radialGradient>
+              <radialGradient id="glow2" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#6070CC" stop-opacity="0.5"/>
+                <stop offset="100%" stop-color="transparent"/>
+              </radialGradient>
+              <linearGradient id="body2" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#050505"/>
+                <stop offset="30%" stop-color="#181818"/>
+                <stop offset="70%" stop-color="#181818"/>
+                <stop offset="100%" stop-color="#050505"/>
+              </linearGradient>
+              <linearGradient id="base2" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#050505"/>
+                <stop offset="50%" stop-color="#141414"/>
+                <stop offset="100%" stop-color="#050505"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="card-info">
+          <div class="card-name">Noir Essence</div>
+          <div class="card-note">Black Musk · Vetiver · Incense</div>
+          <div class="card-price">PKR 3,500</div>
+          <button class="card-add" onclick="addToCart(this,'Noir Essence')">Add to Bag</button>
+        </div>
+      </div>
+
+      <!-- Card 3: Vanilla Veil -->
+      <div class="product-card reveal reveal-delay-2">
+        <div class="card-bg card-bg-3"></div>
+        <div class="card-glow glow-3"></div>
+        <div class="card-label">Limited</div>
+        <div class="card-candle">
+          <svg viewBox="0 0 160 280" class="candle-svg" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="80" cy="36" rx="11" ry="17" fill="url(#flame3)" opacity="0.92"/>
+            <ellipse cx="80" cy="42" rx="5" ry="9" fill="rgba(255,255,255,0.8)"/>
+            <ellipse cx="80" cy="50" rx="17" ry="21" fill="url(#glow3)" opacity="0.4"/>
+            <rect x="79" y="50" width="2" height="13" fill="#4A3520" rx="1"/>
+            <ellipse cx="80" cy="68" rx="27" ry="5.5" fill="rgba(200,180,140,0.6)"/>
+            <rect x="53" y="68" width="54" height="172" rx="4" fill="url(#body3)"/>
+            <rect x="53" y="68" width="11" height="172" rx="4" fill="rgba(255,255,255,0.05)"/>
+            <rect x="63" y="142" width="34" height="58" rx="2" fill="rgba(198,162,93,0.08)" stroke="rgba(198,162,93,0.25)" stroke-width="0.5"/>
+            <text x="80" y="163" text-anchor="middle" fill="rgba(198,162,93,0.6)" font-size="5" font-family="serif" letter-spacing="1">LUMIÈRE</text>
+            <text x="80" y="174" text-anchor="middle" fill="rgba(198,162,93,0.4)" font-size="4" font-family="serif" letter-spacing="0.5">by Yasra</text>
+            <rect x="49" y="238" width="62" height="8" rx="3" fill="url(#base3)"/>
+            <defs>
+              <radialGradient id="flame3" cx="50%" cy="80%" r="50%">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="30%" stop-color="#FFECC0"/>
+                <stop offset="70%" stop-color="#FFB347"/>
+                <stop offset="100%" stop-color="transparent"/>
+              </radialGradient>
+              <radialGradient id="glow3" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#D4A04A" stop-opacity="0.5"/>
+                <stop offset="100%" stop-color="transparent"/>
+              </radialGradient>
+              <linearGradient id="body3" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#2A1E10"/>
+                <stop offset="30%" stop-color="#4A3520"/>
+                <stop offset="70%" stop-color="#4A3520"/>
+                <stop offset="100%" stop-color="#2A1E10"/>
+              </linearGradient>
+              <linearGradient id="base3" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#1E150A"/>
+                <stop offset="50%" stop-color="#382818"/>
+                <stop offset="100%" stop-color="#1E150A"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="card-info">
+          <div class="card-name">Vanilla Veil</div>
+          <div class="card-note">Warm Vanilla · Sandalwood · Honey</div>
+          <div class="card-price">PKR 2,800</div>
+          <button class="card-add" onclick="addToCart(this,'Vanilla Veil')">Add to Bag</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="section-bg-alt"></div>
+  <div class="about-inner" style="position:relative;z-index:2">
+    <div class="about-text reveal">
+      <div class="label-eyebrow">The House of Lumière</div>
+      <blockquote class="about-quote">"Not just a candle — it is a <span>feeling</span>, a moment, a quiet luxury."</blockquote>
+      <p class="about-body">Lumière by Yasra was born from a desire to fill spaces with intention. Each fragrance is a story — crafted in small batches, poured with care, and designed to transform the ordinary into the extraordinary.</p>
+      <br>
+      <p class="about-body">We believe luxury is not loud. It whispers. It lingers. It becomes the memory of a room.</p>
+      <br>
+      <a href="#" class="btn-ghost" style="font-size:0.65rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--text-dim);text-decoration:none;font-family:'Jost',sans-serif;font-weight:300;cursor:none;display:inline-flex;align-items:center;gap:0.8rem;transition:color 0.3s">Read Our Story</a>
+    </div>
+    <div class="about-accent reveal reveal-delay-1">
+      <div class="accent-stat">
+        <div class="accent-num">12</div>
+        <div class="accent-label">Signature Fragrances</div>
+      </div>
+      <div class="accent-stat">
+        <div class="accent-num">100%</div>
+        <div class="accent-label">Natural Soy Wax</div>
+      </div>
+      <div class="accent-stat">
+        <div class="accent-num">48h+</div>
+        <div class="accent-label">Burn Duration</div>
+      </div>
+      <div class="accent-stat">
+        <div class="accent-num">✦</div>
+        <div class="accent-label">Hand-Poured in Pakistan</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GIFTING -->
+<section id="gifting">
+  <div class="section-bg"></div>
+  <div class="gift-inner" style="position:relative;z-index:2">
+    <div class="gift-layout">
+      <div class="gift-visual reveal">
+        <!-- Gift box visualization -->
+        <svg viewBox="0 0 300 300" width="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="boxGlow" cx="50%" cy="40%" r="60%">
+              <stop offset="0%" stop-color="rgba(198,162,93,0.15)"/>
+              <stop offset="100%" stop-color="transparent"/>
+            </radialGradient>
+          </defs>
+          <!-- Glow -->
+          <ellipse cx="150" cy="150" rx="120" ry="100" fill="url(#boxGlow)"/>
+          <!-- Box Base -->
+          <rect x="70" y="160" width="160" height="100" rx="4" fill="#2A0A0F" stroke="rgba(198,162,93,0.25)" stroke-width="1"/>
+          <!-- Box Lid -->
+          <rect x="65" y="140" width="170" height="30" rx="3" fill="#3D1520" stroke="rgba(198,162,93,0.35)" stroke-width="1"/>
+          <!-- Box lid top face -->
+          <rect x="65" y="135" width="170" height="12" rx="3" fill="#4A1F2A" stroke="rgba(198,162,93,0.3)" stroke-width="1"/>
+          <!-- Ribbon vertical -->
+          <rect x="143" y="135" width="14" height="125" fill="rgba(198,162,93,0.12)" stroke="rgba(198,162,93,0.4)" stroke-width="0.5"/>
+          <!-- Ribbon horizontal -->
+          <rect x="70" y="162" width="160" height="12" fill="rgba(198,162,93,0.1)" stroke="rgba(198,162,93,0.35)" stroke-width="0.5"/>
+          <!-- Bow loops left -->
+          <ellipse cx="122" cy="132" rx="22" ry="14" fill="rgba(198,162,93,0.12)" stroke="rgba(198,162,93,0.4)" stroke-width="1" transform="rotate(-20 122 132)"/>
+          <!-- Bow loops right -->
+          <ellipse cx="178" cy="132" rx="22" ry="14" fill="rgba(198,162,93,0.12)" stroke="rgba(198,162,93,0.4)" stroke-width="1" transform="rotate(20 178 132)"/>
+          <!-- Bow center -->
+          <ellipse cx="150" cy="132" rx="10" ry="8" fill="rgba(198,162,93,0.2)" stroke="rgba(198,162,93,0.5)" stroke-width="0.8"/>
+          <!-- Ribbon tails -->
+          <line x1="140" y1="136" x2="120" y2="160" stroke="rgba(198,162,93,0.35)" stroke-width="1"/>
+          <line x1="160" y1="136" x2="180" y2="160" stroke="rgba(198,162,93,0.35)" stroke-width="1"/>
+          <!-- Candle silhouette inside box hint -->
+          <rect x="125" y="170" width="20" height="50" rx="2" fill="rgba(198,162,93,0.06)" stroke="rgba(198,162,93,0.15)" stroke-width="0.5"/>
+          <rect x="155" y="178" width="20" height="42" rx="2" fill="rgba(198,162,93,0.06)" stroke="rgba(198,162,93,0.15)" stroke-width="0.5"/>
+          <!-- Lumiere text -->
+          <text x="150" y="225" text-anchor="middle" fill="rgba(198,162,93,0.35)" font-size="8" font-family="Cormorant Garamond, serif" letter-spacing="3">LUMIÈRE</text>
+          <!-- Sparkles -->
+          <g fill="rgba(198,162,93,0.5)">
+            <circle cx="80" cy="120" r="1.5"/>
+            <circle cx="220" cy="100" r="1"/>
+            <circle cx="240" cy="180" r="1.5"/>
+            <circle cx="60" cy="200" r="1"/>
+            <circle cx="200" cy="260" r="1.5"/>
+            <circle cx="100" cy="260" r="1"/>
+          </g>
+        </svg>
+      </div>
+      <div class="gift-content">
+        <div class="section-label reveal" style="margin-bottom:2rem">
+          <div class="label-eyebrow">Gifting</div>
+          <h2 class="section-title" style="font-size:clamp(1.8rem,3vw,2.8rem)">Curated for moments <em>that matter</em></h2>
+        </div>
+        <p class="gift-body reveal reveal-delay-1">Every Lumière gift is an experience. Hand-selected, beautifully wrapped, and infused with the quiet luxury of the finest fragrance oils. For weddings, celebrations, or simply because.</p>
+        <div class="bundle-list reveal reveal-delay-2">
+          <div class="bundle-item">
+            <div class="bundle-icon">
+              <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M12 3a9 9 0 100 18A9 9 0 0012 3z" stroke-linecap="round"/><path d="M12 8v4l3 3" stroke-linecap="round"/></svg>
+            </div>
+            <div>
+              <div class="bundle-name">The Signature Set — Candle + Oil</div>
+            </div>
+            <div class="bundle-price">4,800</div>
+          </div>
+          <div class="bundle-item">
+            <div class="bundle-icon">
+              <svg viewBox="0 0 24 24" stroke-width="1.5"><rect x="3" y="8" width="18" height="13" rx="2" stroke-linecap="round"/><path d="M9 8V6a3 3 0 016 0v2" stroke-linecap="round"/></svg>
+            </div>
+            <div>
+              <div class="bundle-name">Luxury Gift Box — 3 Candles</div>
+            </div>
+            <div class="bundle-price">8,500</div>
+          </div>
+          <div class="bundle-item">
+            <div class="bundle-icon">
+              <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke-linecap="round"/></svg>
+            </div>
+            <div>
+              <div class="bundle-name">Bespoke Corporate Gifting</div>
+            </div>
+            <div class="bundle-price">Custom</div>
+          </div>
+        </div>
+        <a href="#" class="btn-gold reveal reveal-delay-3" style="display:inline-block">Explore Gift Sets</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="section-bg-alt"></div>
+  <!-- Large ambient glow -->
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:400px;background:radial-gradient(ellipse,rgba(92,28,40,0.3) 0%,transparent 70%);pointer-events:none"></div>
+  <div class="cta-inner">
+    <div class="reveal">
+      <div class="label-eyebrow" style="justify-content:center;margin-bottom:2rem">
+        <span style="display:flex;align-items:center;gap:1.5rem">
+          <span style="display:block;width:30px;height:1px;background:linear-gradient(90deg,transparent,var(--gold))"></span>
+          Lumière by Yasra
+          <span style="display:block;width:30px;height:1px;background:linear-gradient(90deg,var(--gold),transparent)"></span>
+        </span>
+      </div>
+      <h2 class="cta-title">Let the <em>light</em><br>find you.</h2>
+      <p class="cta-sub">Hand-poured luxury candles, crafted for those who understand the art of ambience. Explore the full collection.</p>
+      <div class="cta-btns">
+        <a href="#collection" class="btn-gold">Shop Now</a>
+        <a href="#collection" class="btn-gold" style="border-color:rgba(198,162,93,0.3);color:var(--text-pale)">Explore the Collection</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="footer-brand">Lumière by Yasra</div>
+    <div class="footer-tagline">Yasra — curated for moments that matter.</div>
+  </div>
+  <div class="footer-social">
+    <a href="#" class="social-link" aria-label="Instagram">
+      <svg viewBox="0 0 24 24" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="var(--gold)" stroke="none"/></svg>
+    </a>
+    <a href="#" class="social-link" aria-label="Pinterest">
+      <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.236 2.636 7.855 6.356 9.312-.088-.791-.167-2.005.035-2.868.181-.78 1.172-4.97 1.172-4.97s-.299-.598-.299-1.482c0-1.388.806-2.428 1.808-2.428.852 0 1.265.64 1.265 1.408 0 .858-.546 2.14-.828 3.33-.236.995.498 1.806 1.476 1.806 1.772 0 3.135-1.867 3.135-4.563 0-2.386-1.715-4.054-4.163-4.054-2.837 0-4.5 2.127-4.5 4.326 0 .856.33 1.775.742 2.277a.3.3 0 01.069.286c-.076.314-.245.995-.278 1.134-.045.183-.15.222-.345.134-1.249-.581-2.03-2.407-2.03-3.874 0-3.154 2.292-6.052 6.608-6.052 3.469 0 6.165 2.473 6.165 5.776 0 3.447-2.173 6.22-5.19 6.22-1.013 0-1.966-.527-2.292-1.148l-.623 2.378c-.226.869-.835 1.958-1.244 2.621.937.29 1.931.446 2.962.446 5.523 0 10-4.477 10-10S17.523 2 12 2z"/></svg>
+    </a>
+    <a href="#" class="social-link" aria-label="WhatsApp">
+      <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M20.52 3.449C18.24 1.245 15.24 0 12.045 0 5.463 0 .104 5.334.101 11.893c0 2.096.549 4.14 1.595 5.945L0 24l6.335-1.652c1.746.943 3.71 1.444 5.71 1.444h.005c6.585 0 11.946-5.336 11.949-11.896 0-3.176-1.24-6.165-3.479-8.447z"/></svg>
+    </a>
+  </div>
+  <div class="footer-copy">© 2025 Lumière by Yasra. All rights reserved.</div>
+</footer>
+
+<!-- SOUND TOGGLE -->
+<button class="sound-toggle" id="soundToggle" title="Toggle ambient sound">
+  <svg id="soundIcon" viewBox="0 0 24 24" stroke-width="1.5"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14" id="soundWave2"/></svg>
+</button>
+
+<script>
+// Loader
+window.addEventListener('load',()=>{
+  setTimeout(()=>{document.getElementById('loader').classList.add('done')},1800);
+});
+
+// Custom cursor
+const cur=document.getElementById('cursor');
+const ring=document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX;my=e.clientY;
+  cur.style.left=mx+'px';cur.style.top=my+'px';
+});
+function animRing(){
+  rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;
+  ring.style.left=rx+'px';ring.style.top=ry+'px';
+  requestAnimationFrame(animRing);
+}animRing();
+document.querySelectorAll('a,button,.product-card,.bundle-item').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ring.style.transform='translate(-50%,-50%) scale(1.8)';ring.style.borderColor='rgba(198,162,93,0.6)'});
+  el.addEventListener('mouseleave',()=>{ring.style.transform='translate(-50%,-50%) scale(1)';ring.style.borderColor='rgba(198,162,93,0.4)'});
+});
+
+// Nav scroll
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>{
+  nav.classList.toggle('scrolled',window.scrollY>60);
+});
+
+// Floating particles
+const pWrap=document.getElementById('particles');
+for(let i=0;i<18;i++){
+  const p=document.createElement('div');
+  p.className='particle';
+  const x=Math.random()*100;
+  const rise=-(80+Math.random()*120)+'px';
+  const drift=(Math.random()-0.5)*60+'px';
+  const dur=(4+Math.random()*6)+'s';
+  const delay=(Math.random()*8)+'s';
+  const peak=(0.15+Math.random()*0.35).toFixed(2);
+  p.style.cssText=`left:${x}%;bottom:${Math.random()*40}%;--dur:${dur};--delay:${delay};--rise:${rise};--drift:${drift};--peak:${peak}`;
+  pWrap.appendChild(p);
+}
+
+// Scroll reveal
+const obs=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible')});
+},{threshold:0.1,rootMargin:'0px 0px -60px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// Hero parallax
+document.addEventListener('mousemove',e=>{
+  const x=(e.clientX/window.innerWidth-0.5)*12;
+  const y=(e.clientY/window.innerHeight-0.5)*8;
+  document.querySelector('.hero-text').style.transform=`translate(${x*0.3}px,${y*0.3}px)`;
+  document.getElementById('canvasWrap').style.transform=`translate(${x*0.6}px,${y*0.5}px)`;
+});
+
+// Cart feedback
+let cartCount=0;
+function addToCart(btn,name){
+  cartCount++;
+  document.querySelector('.nav-cart').textContent=`Bag (${cartCount})`;
+  const orig=btn.textContent;
+  btn.textContent='Added ✦';
+  btn.style.color='var(--gold-light)';
+  setTimeout(()=>{btn.textContent=orig;btn.style.color=''},2000);
+}
+
+// Canvas 2D candle rendering (fallback / standalone)
+const canvas=document.getElementById('candleCanvas');
+const ctx=canvas.getContext('2d');
+canvas.classList.add('loaded');
+let t=0,mouseX=300,mouseY=350;
+canvas.addEventListener('mousemove',e=>{
+  const r=canvas.getBoundingClientRect();
+  mouseX=e.clientX-r.left;
+  mouseY=e.clientY-r.top;
+});
+document.addEventListener('mousemove',e=>{
+  if(document.getElementById('hero').matches(':hover')){
+    const r=canvas.getBoundingClientRect();
+    mouseX=e.clientX-r.left;
+    mouseY=e.clientY-r.top;
+  }
+});
+
+function drawCandle(){
+  ctx.clearRect(0,0,600,700);
+  t+=0.018;
+  const tiltX=(mouseX-300)*0.015;
+  const tiltY=(mouseY-350)*0.008;
+  ctx.save();
+  ctx.translate(300,350);
+  ctx.rotate(tiltX*0.04);
+
+  // Candle shadow
+  ctx.save();
+  ctx.translate(0,180);
+  const sgrd=ctx.createRadialGradient(tiltX*3,0,0,tiltX*3,0,140);
+  sgrd.addColorStop(0,'rgba(10,0,3,0.5)');
+  sgrd.addColorStop(1,'transparent');
+  ctx.fillStyle=sgrd;
+  ctx.scale(1,0.3);
+  ctx.beginPath();ctx.arc(0,0,140,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+
+  // === CANDLE BODY ===
+  const bodyW=80,bodyH=280,bodyX=-40,bodyY=-20;
+  // Main gradient
+  const grad=ctx.createLinearGradient(bodyX,0,bodyX+bodyW,0);
+  grad.addColorStop(0,'#0D0306');
+  grad.addColorStop(0.2,'#2A0A0F');
+  grad.addColorStop(0.5,'#4A1525');
+  grad.addColorStop(0.8,'#2A0A0F');
+  grad.addColorStop(1,'#0D0306');
+  ctx.fillStyle=grad;
+  ctx.beginPath();
+  ctx.roundRect(bodyX,bodyY,bodyW,bodyH,8);
+  ctx.fill();
+  // Highlight
+  const hgrad=ctx.createLinearGradient(bodyX,0,bodyX+20,0);
+  hgrad.addColorStop(0,'rgba(255,255,255,0.0)');
+  hgrad.addColorStop(1,'rgba(255,255,255,0.04)');
+  ctx.fillStyle=hgrad;
+  ctx.beginPath();ctx.roundRect(bodyX,bodyY,20,bodyH,8);ctx.fill();
+
+  // Label
+  ctx.strokeStyle='rgba(198,162,93,0.2)';
+  ctx.lineWidth=0.8;
+  ctx.strokeRect(-25,-20+80,50,80);
+  ctx.fillStyle='rgba(198,162,93,0.15)';ctx.fillRect(-25,-20+80,50,80);
+  ctx.fillStyle='rgba(198,162,93,0.6)';
+  ctx.font='600 9px Cormorant Garamond, serif';
+  ctx.letterSpacing='3px';
+  ctx.textAlign='center';
+  ctx.fillText('LUMIÈRE',0,76);
+  ctx.fillStyle='rgba(198,162,93,0.35)';
+  ctx.font='300 7px Jost, sans-serif';
+  ctx.fillText('by Yasra',0,92);
+
+  // Wax pool
+  const wpGrad=ctx.createRadialGradient(0,-25,0,0,-25,45);
+  wpGrad.addColorStop(0,'rgba(120,30,50,0.9)');
+  wpGrad.addColorStop(1,'rgba(42,10,15,0.6)');
+  ctx.fillStyle=wpGrad;
+  ctx.save();ctx.scale(1,0.35);
+  ctx.beginPath();ctx.arc(0,-25/0.35,45,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+
+  // Wick
+  ctx.strokeStyle='rgba(60,30,20,0.9)';
+  ctx.lineWidth=2;ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(0,-22);ctx.lineTo(0,-38);ctx.stroke();
+
+  // === FLAME ===
+  const flicker1=Math.sin(t*3.1)*0.08;
+  const flicker2=Math.sin(t*5.7)*0.05;
+  const flicker3=Math.sin(t*2.3)*0.06;
+  const flameH=42+flicker1*8;
+  const flameW=14+flicker2*4;
+  const flickerX=tiltX*1.5+(flicker1+flicker2)*4;
+
+  // Outer glow halo
+  const haloGrad=ctx.createRadialGradient(flickerX,-38-flameH*0.5,0,flickerX,-38-flameH*0.4,80);
+  haloGrad.addColorStop(0,'rgba(255,160,60,0.18)');
+  haloGrad.addColorStop(0.3,'rgba(255,100,30,0.08)');
+  haloGrad.addColorStop(1,'transparent');
+  ctx.fillStyle=haloGrad;
+  ctx.beginPath();ctx.arc(flickerX,-38-flameH*0.4,80,0,Math.PI*2);ctx.fill();
+
+  // Warm ambient glow on body
+  const ambGrad=ctx.createRadialGradient(0,-22,0,0,-22,90);
+  ambGrad.addColorStop(0,'rgba(255,140,40,0.12)');
+  ambGrad.addColorStop(0.5,'rgba(255,80,20,0.04)');
+  ambGrad.addColorStop(1,'transparent');
+  ctx.fillStyle=ambGrad;
+  ctx.beginPath();ctx.arc(0,-22,90,0,Math.PI*2);ctx.fill();
+
+  // Flame outer
+  const fGrad=ctx.createRadialGradient(flickerX,-38-flameH*0.6,0,flickerX,-38-flameH*0.3,flameW*1.4);
+  fGrad.addColorStop(0,'rgba(255,240,180,0.95)');
+  fGrad.addColorStop(0.3,'rgba(255,180,60,0.9)');
+  fGrad.addColorStop(0.6,'rgba(255,100,30,0.7)');
+  fGrad.addColorStop(1,'transparent');
+  ctx.fillStyle=fGrad;
+  ctx.beginPath();
+  ctx.moveTo(flickerX,-38);
+  ctx.bezierCurveTo(
+    flickerX+flameW,-(38+flameH*0.4),
+    flickerX+flameW*0.6,-(38+flameH*0.9),
+    flickerX,-(38+flameH+flicker3*5)
+  );
+  ctx.bezierCurveTo(
+    flickerX-flameW*0.6,-(38+flameH*0.9),
+    flickerX-flameW,-(38+flameH*0.4),
+    flickerX,-38
+  );
+  ctx.fill();
+
+  // Inner white core
+  const cGrad=ctx.createRadialGradient(flickerX,-38-flameH*0.35,0,flickerX,-38-flameH*0.3,flameW*0.5);
+  cGrad.addColorStop(0,'rgba(255,255,255,0.98)');
+  cGrad.addColorStop(0.5,'rgba(255,240,200,0.8)');
+  cGrad.addColorStop(1,'transparent');
+  ctx.fillStyle=cGrad;
+  ctx.beginPath();
+  ctx.ellipse(flickerX,-38-flameH*0.35,flameW*0.4,flameH*0.3,0,0,Math.PI*2);
+  ctx.fill();
+
+  // Base plate
+  const bGrad=ctx.createLinearGradient(-45,260,45,260);
+  bGrad.addColorStop(0,'rgba(10,2,4,0.9)');
+  bGrad.addColorStop(0.5,'rgba(30,10,15,0.9)');
+  bGrad.addColorStop(1,'rgba(10,2,4,0.9)');
+  ctx.fillStyle=bGrad;
+  ctx.beginPath();ctx.roundRect(-46,258,92,14,6);ctx.fill();
+
+  ctx.restore();
+  requestAnimationFrame(drawCandle);
+}
+drawCandle();
+
+// Sound toggle (visual only — ambient simulation)
+const sToggle=document.getElementById('soundToggle');
+const sIcon=document.getElementById('soundIcon');
+let sOn=false;
+let audioCtx=null,gainNode=null,noiseNode=null;
+sToggle.addEventListener('click',()=>{
+  sOn=!sOn;
+  if(sOn){
+    try{
+      audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+      gainNode=audioCtx.createGain();gainNode.gain.value=0.015;gainNode.connect(audioCtx.destination);
+      const bufLen=audioCtx.sampleRate*3;
+      const buf=audioCtx.createBuffer(1,bufLen,audioCtx.sampleRate);
+      const data=buf.getChannelData(0);
+      for(let i=0;i<bufLen;i++)data[i]=(Math.random()*2-1)*(0.3+Math.random()*0.4);
+      const src=audioCtx.createBufferSource();src.buffer=buf;src.loop=true;
+      const filt=audioCtx.createBiquadFilter();filt.type='bandpass';filt.frequency.value=800;filt.Q.value=0.3;
+      src.connect(filt);filt.connect(gainNode);src.start();
+      noiseNode=src;
+    }catch(e){}
+    sIcon.innerHTML='<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>';
+    sToggle.style.borderColor='rgba(198,162,93,0.5)';
+  }else{
+    if(noiseNode)try{noiseNode.stop()}catch(e){}
+    if(audioCtx)try{audioCtx.close()}catch(e){}
+    sIcon.innerHTML='<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>';
+    sToggle.style.borderColor='rgba(198,162,93,0.2)';
+  }
+});
+</script>
+</body>
+</html>
