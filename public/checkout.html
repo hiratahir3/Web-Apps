@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Checkout — Lumière by Yasra</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+<style>
+  .checkout{display:grid;grid-template-columns:1fr 380px;gap:3rem;align-items:start}
+  @media(max-width:840px){.checkout{grid-template-columns:1fr}}
+  .summary{background:rgba(13,2,5,0.5);border:1px solid rgba(198,162,93,0.15);padding:1.6rem;position:sticky;top:6rem}
+  .summary h3{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.2rem;letter-spacing:0.2em;color:var(--gold-light);margin-bottom:1rem}
+  .summary-row{display:flex;justify-content:space-between;padding:0.4rem 0;font-size:0.8rem;color:var(--text-pale)}
+  .summary-row.total{margin-top:0.8rem;padding-top:0.8rem;border-top:1px solid rgba(198,162,93,0.15);font-family:'Cormorant Garamond',serif;font-size:1.2rem;color:var(--gold)}
+  .summary ul{list-style:none;font-size:0.78rem;color:var(--text-pale);margin-bottom:1rem}
+  .summary ul li{padding:0.4rem 0;border-bottom:1px dashed rgba(198,162,93,0.1);display:flex;justify-content:space-between}
+  .pay-options{display:flex;flex-direction:column;gap:0.7rem;margin:1.2rem 0}
+  .pay-options label{display:flex;align-items:center;gap:0.8rem;padding:0.9rem 1rem;border:1px solid rgba(198,162,93,0.2);cursor:pointer;font-size:0.78rem;letter-spacing:0.1em;color:var(--text-pale);transition:all 0.3s}
+  .pay-options label:has(input:checked){border-color:var(--gold);background:rgba(198,162,93,0.06)}
+  .pay-options input{accent-color:var(--gold)}
+</style>
+</head>
+<body class="page">
+
+<nav class="lum-nav">
+  <a href="/" class="logo">Lumière</a>
+  <ul><li><a href="/#collection">Collection</a></li><li><a href="/#about">House</a></li><li><a href="/#contact">Contact</a></li></ul>
+  <div class="nav-actions"><a href="/account.html" data-acct-link>Sign In</a><button class="nav-cart" data-cart-count onclick="openCart()">Bag (0)</button></div>
+</nav>
+
+<main class="page-main">
+  <div class="page-sub">— Step 2 —</div>
+  <h1 class="page-title">Complete your <em>order</em></h1>
+  <p class="muted" style="margin-bottom:2.5rem">Free shipping on orders over PKR 8,000 within Pakistan.</p>
+
+  <div id="empty" style="display:none">
+    <div class="alert">Your bag is empty. <a href="/#collection" style="color:var(--gold)">Continue shopping →</a></div>
+  </div>
+
+  <div class="checkout" id="checkoutGrid" style="display:none">
+    <form id="checkoutForm" class="form" style="max-width:none">
+      <h3 style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.3rem;letter-spacing:0.2em;color:var(--gold-light);margin-bottom:0.8rem">Delivery Details</h3>
+      <div class="form-row">
+        <div><label>Full Name *</label><input name="name" required></div>
+        <div><label>Phone *</label><input name="phone" required placeholder="03xx-xxxxxxx"></div>
+      </div>
+      <div><label>Email</label><input name="email" type="email" placeholder="for order updates"></div>
+      <div><label>Street Address *</label><input name="address" required></div>
+      <div class="form-row">
+        <div><label>City</label><input name="city" placeholder="Karachi / Lahore / ..."></div>
+        <div><label>Order Notes</label><input name="notes" placeholder="Optional"></div>
+      </div>
+
+      <h3 style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.3rem;letter-spacing:0.2em;color:var(--gold-light);margin:1.5rem 0 0.4rem">Payment</h3>
+      <div class="pay-options">
+        <label><input type="radio" name="pay" value="cod" checked> Cash on Delivery</label>
+        <label id="stripeOption" style="display:none"><input type="radio" name="pay" value="stripe"> Credit / Debit Card (Stripe)</label>
+      </div>
+      <div id="msg"></div>
+      <button type="submit" class="btn btn-primary btn-block" id="submitBtn">Place Order</button>
+    </form>
+
+    <aside class="summary">
+      <h3>Order Summary</h3>
+      <ul id="sumItems"></ul>
+      <div class="summary-row"><span>Subtotal</span><span id="sumSub">PKR 0</span></div>
+      <div class="summary-row"><span>Shipping</span><span id="sumShip">PKR 250</span></div>
+      <div class="summary-row total"><span>Total</span><span id="sumTotal">PKR 0</span></div>
+    </aside>
+  </div>
+</main>
+
+<footer class="lum-footer">© 2026 Lumière by Yasra</footer>
+
+<div class="cart-overlay" id="cartOverlay"></div>
+<aside class="cart-drawer" id="cartDrawer">
+  <div class="cart-head"><h3>Your Bag</h3><button class="cart-close" onclick="closeCart()">×</button></div>
+  <div class="cart-body" id="cartItems"></div>
+  <div class="cart-foot">
+    <div class="row"><span>Subtotal</span><span class="total" id="cartSubtotal">PKR 0</span></div>
+    <a href="/checkout.html" class="btn btn-primary btn-block">Checkout</a>
+  </div>
+</aside>
+
+<script src="/app.js"></script>
+<script>
+const SHIPPING=250;
+function refresh(){
+  const items=cart.read();
+  if(!items.length){
+    document.getElementById('empty').style.display='block';
+    document.getElementById('checkoutGrid').style.display='none';
+    return;
+  }
+  document.getElementById('empty').style.display='none';
+  document.getElementById('checkoutGrid').style.display='grid';
+  document.getElementById('sumItems').innerHTML=items.map(i=>`<li><span>${i.name} <span style="color:var(--gold)">×${i.qty}</span></span><span>${fmt(i.price*i.qty)}</span></li>`).join('');
+  const sub=cart.subtotal();
+  const ship=sub>=8000?0:SHIPPING;
+  document.getElementById('sumSub').textContent=fmt(sub);
+  document.getElementById('sumShip').textContent=ship?fmt(ship):'Free';
+  document.getElementById('sumTotal').textContent=fmt(sub+ship);
+}
+refresh();
+
+// Show stripe option if enabled
+api('/config').then(c=>{ if(c.stripe_enabled) document.getElementById('stripeOption').style.display='flex'; });
+
+// Prefill if logged in
+getMe().then(({user})=>{
+  if(!user) return;
+  const f=document.forms.checkoutForm;
+  if(user.name)f.name.value=user.name;
+  if(user.phone)f.phone.value=user.phone;
+  if(user.email)f.email.value=user.email;
+  if(user.address)f.address.value=user.address;
+  if(user.city)f.city.value=user.city;
+});
+
+document.getElementById('checkoutForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const fd=new FormData(e.target);
+  const btn=document.getElementById('submitBtn');
+  const msg=document.getElementById('msg');
+  btn.disabled=true; btn.textContent='Processing...';
+  try{
+    const items=cart.read().map(i=>({product_id:i.product_id,qty:i.qty}));
+    const r=await api('/orders',{method:'POST',body:{
+      items,
+      customer:{name:fd.get('name'),phone:fd.get('phone'),email:fd.get('email'),address:fd.get('address'),city:fd.get('city')},
+      payment_method:fd.get('pay'),
+      notes:fd.get('notes'),
+    }});
+    cart.clear();
+    if(r.stripe_url){ window.location.href=r.stripe_url; return; }
+    window.location.href='/order-success.html?id='+r.id;
+  }catch(err){
+    msg.innerHTML=`<div class="alert alert-error">${err.message}</div>`;
+    btn.disabled=false; btn.textContent='Place Order';
+  }
+});
+
+// On cart drawer change, refresh summary
+const obs=new MutationObserver(refresh);
+window.addEventListener('storage',refresh);
+</script>
+</body>
+</html>

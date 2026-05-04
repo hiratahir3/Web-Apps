@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account — Lumière by Yasra</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body class="page">
+<nav class="lum-nav">
+  <a href="/" class="logo">Lumière</a>
+  <ul><li><a href="/#collection">Collection</a></li><li><a href="/#about">House</a></li><li><a href="/#contact">Contact</a></li></ul>
+  <div class="nav-actions"><a href="/account.html" data-acct-link>Sign In</a><button class="nav-cart" data-cart-count onclick="openCart()">Bag (0)</button></div>
+</nav>
+
+<main class="page-main">
+  <!-- AUTH (logged out) -->
+  <section id="authView" style="display:none">
+    <div class="page-sub">— Welcome —</div>
+    <h1 class="page-title">Your <em>Lumière</em> account</h1>
+    <p class="muted" style="margin-bottom:2.5rem">Sign in to track orders and save your details for next time.</p>
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button id="tabLogin" class="active" onclick="switchTab('login')">Sign In</button>
+        <button id="tabSignup" onclick="switchTab('signup')">Create Account</button>
+      </div>
+
+      <form id="loginForm" class="form" style="max-width:none">
+        <div><label>Email</label><input name="email" type="email" required></div>
+        <div><label>Password</label><input name="password" type="password" required></div>
+        <div id="loginMsg"></div>
+        <button class="btn btn-primary btn-block" type="submit">Sign In</button>
+      </form>
+
+      <form id="signupForm" class="form" style="max-width:none;display:none">
+        <div><label>Name</label><input name="name"></div>
+        <div><label>Email</label><input name="email" type="email" required></div>
+        <div><label>Phone</label><input name="phone"></div>
+        <div><label>Password (6+ chars)</label><input name="password" type="password" required minlength="6"></div>
+        <div id="signupMsg"></div>
+        <button class="btn btn-primary btn-block" type="submit">Create Account</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ACCOUNT (logged in) -->
+  <section id="acctView" style="display:none">
+    <div class="page-sub">— Your account —</div>
+    <h1 class="page-title">Hello, <em id="greetName">friend</em></h1>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;margin-top:2.5rem" id="acctGrid">
+      <div>
+        <h3 style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.4rem;color:var(--gold-light);margin-bottom:1rem">Profile</h3>
+        <form id="profileForm" class="form" style="max-width:none">
+          <div><label>Name</label><input name="name"></div>
+          <div><label>Phone</label><input name="phone"></div>
+          <div><label>Address</label><input name="address"></div>
+          <div><label>City</label><input name="city"></div>
+          <div id="profileMsg"></div>
+          <button class="btn btn-block" type="submit">Save Details</button>
+        </form>
+        <button class="btn btn-ghost btn-sm" style="margin-top:1.4rem" onclick="logout()">Sign Out</button>
+      </div>
+      <div>
+        <h3 style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.4rem;color:var(--gold-light);margin-bottom:1rem">Your Orders</h3>
+        <div id="ordersList"><p class="muted">Loading…</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="lum-footer">© 2026 Lumière by Yasra</footer>
+
+<div class="cart-overlay" id="cartOverlay"></div>
+<aside class="cart-drawer" id="cartDrawer">
+  <div class="cart-head"><h3>Your Bag</h3><button class="cart-close" onclick="closeCart()">×</button></div>
+  <div class="cart-body" id="cartItems"></div>
+  <div class="cart-foot"><div class="row"><span>Subtotal</span><span class="total" id="cartSubtotal">PKR 0</span></div><a href="/checkout.html" class="btn btn-primary btn-block">Checkout</a></div>
+</aside>
+
+<script src="/app.js"></script>
+<script>
+function switchTab(t){
+  document.getElementById('tabLogin').classList.toggle('active',t==='login');
+  document.getElementById('tabSignup').classList.toggle('active',t==='signup');
+  document.getElementById('loginForm').style.display=t==='login'?'flex':'none';
+  document.getElementById('signupForm').style.display=t==='signup'?'flex':'none';
+}
+
+async function load(){
+  const me=await getMe();
+  if(me.user){
+    document.getElementById('authView').style.display='none';
+    document.getElementById('acctView').style.display='block';
+    document.getElementById('greetName').textContent=(me.user.name||me.user.email.split('@')[0]);
+    const f=document.forms.profileForm;
+    f.name.value=me.user.name||''; f.phone.value=me.user.phone||''; f.address.value=me.user.address||''; f.city.value=me.user.city||'';
+    loadOrders();
+  } else {
+    document.getElementById('authView').style.display='block';
+    document.getElementById('acctView').style.display='none';
+  }
+}
+
+async function loadOrders(){
+  const wrap=document.getElementById('ordersList');
+  try{
+    const orders=await api('/orders/me');
+    if(!orders.length){ wrap.innerHTML='<p class="muted">No orders yet. <a href="/#collection" style="color:var(--gold)">Shop the collection →</a></p>'; return; }
+    wrap.innerHTML=orders.map(o=>`
+      <div class="order-card">
+        <div class="head"><h4>Order #${o.id}</h4><span class="badge badge-${o.status}">${o.status}</span></div>
+        <ul>${o.items.map(i=>`<li>${i.name} × ${i.qty} <span style="float:right">${fmt(i.price*i.qty)}</span></li>`).join('')}</ul>
+        <div style="display:flex;justify-content:space-between;margin-top:0.8rem;font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--gold)"><span>${new Date(o.created_at).toLocaleDateString()}</span><span>${fmt(o.total)}</span></div>
+      </div>`).join('');
+  }catch(e){ wrap.innerHTML=`<p class="alert alert-error">${e.message}</p>`; }
+}
+
+document.getElementById('loginForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const fd=new FormData(e.target); const msg=document.getElementById('loginMsg');
+  try{ await api('/auth/login',{method:'POST',body:Object.fromEntries(fd)}); load(); }
+  catch(err){ msg.innerHTML=`<div class="alert alert-error">${err.message}</div>`; }
+});
+document.getElementById('signupForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const fd=new FormData(e.target); const msg=document.getElementById('signupMsg');
+  try{ await api('/auth/signup',{method:'POST',body:Object.fromEntries(fd)}); load(); }
+  catch(err){ msg.innerHTML=`<div class="alert alert-error">${err.message}</div>`; }
+});
+document.getElementById('profileForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const fd=new FormData(e.target); const msg=document.getElementById('profileMsg');
+  try{ await api('/auth/me',{method:'PUT',body:Object.fromEntries(fd)}); msg.innerHTML='<div class="alert alert-success">Saved.</div>'; }
+  catch(err){ msg.innerHTML=`<div class="alert alert-error">${err.message}</div>`; }
+});
+async function logout(){ await api('/auth/logout',{method:'POST'}); location.href='/'; }
+
+load();
+</script>
+</body>
+</html>

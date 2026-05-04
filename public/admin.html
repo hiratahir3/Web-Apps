@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Lumière by Yasra</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+<!-- LOGIN -->
+<section id="loginView" class="page" style="display:none">
+  <main class="page-main" style="max-width:480px">
+    <div class="page-sub">— Lumière —</div>
+    <h1 class="page-title">Admin <em>Sign In</em></h1>
+    <form id="adminLogin" class="form" style="margin-top:2rem">
+      <div><label>Email</label><input name="email" type="email" required></div>
+      <div><label>Password</label><input name="password" type="password" required></div>
+      <div id="loginMsg"></div>
+      <button class="btn btn-primary btn-block" type="submit">Sign In</button>
+    </form>
+    <p class="muted" style="margin-top:1.4rem"><a href="/" style="color:var(--gold)">← Back to site</a></p>
+  </main>
+</section>
+
+<!-- DASHBOARD -->
+<section id="dashView" style="display:none">
+  <div class="admin-shell">
+    <aside class="admin-side">
+      <h2>Lumière</h2>
+      <a class="active" data-tab="overview" onclick="showTab('overview')">Overview</a>
+      <a data-tab="orders" onclick="showTab('orders')">Orders</a>
+      <a data-tab="products" onclick="showTab('products')">Products</a>
+      <a data-tab="messages" onclick="showTab('messages')">Messages</a>
+      <a class="logout" onclick="adminLogout()">Sign out →</a>
+    </aside>
+
+    <main class="admin-main">
+      <!-- Overview -->
+      <div class="tab-section active" data-section="overview">
+        <h1 class="page-title" style="margin-bottom:2rem">Overview</h1>
+        <div class="stats-grid" id="stats"></div>
+        <h3 style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.4rem;color:var(--gold-light);margin:1rem 0">Recent orders</h3>
+        <div id="recent"></div>
+      </div>
+
+      <!-- Orders -->
+      <div class="tab-section" data-section="orders">
+        <h1 class="page-title" style="margin-bottom:1.4rem">Orders</h1>
+        <div style="margin-bottom:1rem"><select id="statusFilter" class="form" style="max-width:240px;display:inline-block">
+          <option value="">All statuses</option>
+          <option>pending</option><option>confirmed</option><option>shipped</option><option>delivered</option><option>cancelled</option>
+        </select></div>
+        <div id="ordersWrap"></div>
+      </div>
+
+      <!-- Products -->
+      <div class="tab-section" data-section="products">
+        <h1 class="page-title" style="margin-bottom:1.4rem">Products</h1>
+        <button class="btn btn-primary btn-sm" onclick="openProductForm()">+ Add product</button>
+        <div id="productsWrap" style="margin-top:1.4rem"></div>
+      </div>
+
+      <!-- Messages -->
+      <div class="tab-section" data-section="messages">
+        <h1 class="page-title" style="margin-bottom:1.4rem">Messages</h1>
+        <div id="messagesWrap"></div>
+      </div>
+    </main>
+  </div>
+</section>
+
+<!-- Product modal -->
+<div id="prodModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;align-items:center;justify-content:center">
+  <div style="background:#1A0508;border:1px solid rgba(198,162,93,0.2);padding:2rem;max-width:520px;width:90%;max-height:90vh;overflow-y:auto">
+    <h3 id="prodTitle" style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.4rem;color:var(--gold-light);margin-bottom:1.2rem">Add product</h3>
+    <form id="prodForm" class="form" style="max-width:none">
+      <input type="hidden" name="id">
+      <div class="form-row">
+        <div><label>Slug</label><input name="slug" required></div>
+        <div><label>Name</label><input name="name" required></div>
+      </div>
+      <div><label>Tagline / Note</label><input name="note" placeholder="Dark Rose · Oud · Amber"></div>
+      <div><label>Description</label><textarea name="description"></textarea></div>
+      <div class="form-row">
+        <div><label>Price (PKR)</label><input name="price" type="number" required min="0"></div>
+        <div><label>Stock</label><input name="stock" type="number" value="100"></div>
+      </div>
+      <div><label>Image URL</label><input name="image" placeholder="/images/mahroon.png"></div>
+      <div class="form-row">
+        <div><label>Badge</label><input name="badge" placeholder="Bestseller / New / Limited"></div>
+        <div><label>Active</label><select name="active"><option value="1">Active</option><option value="0">Hidden</option></select></div>
+      </div>
+      <div class="form-row">
+        <div><label>Card style</label><select name="card_class"><option>card-bg-1</option><option>card-bg-2</option><option>card-bg-3</option></select></div>
+        <div><label>Glow</label><select name="glow_class"><option>glow-1</option><option>glow-2</option><option>glow-3</option></select></div>
+      </div>
+      <div id="prodMsg"></div>
+      <div style="display:flex;gap:0.8rem">
+        <button class="btn btn-primary" type="submit">Save</button>
+        <button class="btn btn-ghost" type="button" onclick="closeProdModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="/app.js"></script>
+<script>
+async function init(){
+  const me=await getMe();
+  if(me.admin){ showDash(); load('overview'); }
+  else { document.getElementById('loginView').style.display='block'; }
+}
+function showDash(){
+  document.getElementById('loginView').style.display='none';
+  document.getElementById('dashView').style.display='block';
+}
+
+document.getElementById('adminLogin').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const fd=new FormData(e.target); const msg=document.getElementById('loginMsg');
+  try{ await api('/auth/admin/login',{method:'POST',body:Object.fromEntries(fd)}); init(); }
+  catch(err){ msg.innerHTML=`<div class="alert alert-error">${err.message}</div>`; }
+});
+
+async function adminLogout(){ await api('/auth/logout',{method:'POST'}); location.reload(); }
+
+function showTab(name){
+  document.querySelectorAll('.admin-side a[data-tab]').forEach(a=>a.classList.toggle('active',a.dataset.tab===name));
+  document.querySelectorAll('.tab-section').forEach(s=>s.classList.toggle('active',s.dataset.section===name));
+  load(name);
+}
+
+async function load(tab){
+  if(tab==='overview') return loadOverview();
+  if(tab==='orders') return loadOrders();
+  if(tab==='products') return loadProducts();
+  if(tab==='messages') return loadMessages();
+}
+
+async function loadOverview(){
+  const s=await api('/admin/summary');
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><div class="stat-label">Total Orders</div><div class="stat-value">${s.orderCount}</div></div>
+    <div class="stat"><div class="stat-label">Pending</div><div class="stat-value">${s.pending}</div></div>
+    <div class="stat"><div class="stat-label">Revenue</div><div class="stat-value">${fmt(s.revenue)}</div></div>
+    <div class="stat"><div class="stat-label">Products</div><div class="stat-value">${s.productCount}</div></div>
+    <div class="stat"><div class="stat-label">Unread Messages</div><div class="stat-value">${s.messages}</div></div>`;
+  const orders=(await api('/admin/orders')).slice(0,8);
+  document.getElementById('recent').innerHTML=ordersTable(orders);
+}
+
+let cachedOrders=[];
+async function loadOrders(){
+  const status=document.getElementById('statusFilter').value;
+  cachedOrders=await api('/admin/orders'+(status?`?status=${status}`:''));
+  document.getElementById('ordersWrap').innerHTML=ordersTable(cachedOrders);
+}
+document.getElementById('statusFilter').addEventListener('change',loadOrders);
+
+function ordersTable(orders){
+  if(!orders.length) return '<p class="muted">No orders.</p>';
+  return `<table class="lum-table">
+    <thead><tr><th>#</th><th>Customer</th><th>Items</th><th>Total</th><th>Pay</th><th>Status</th><th>Date</th><th></th></tr></thead>
+    <tbody>${orders.map(o=>`
+      <tr>
+        <td>${o.id}</td>
+        <td>${o.customer_name}<br><span class="muted">${o.customer_phone||''}</span></td>
+        <td>${o.items.map(i=>`${i.name}×${i.qty}`).join(', ')}</td>
+        <td>${fmt(o.total)}</td>
+        <td><span class="badge badge-${o.payment_status}">${o.payment_status}</span></td>
+        <td><span class="badge badge-${o.status}">${o.status}</span></td>
+        <td class="muted">${new Date(o.created_at).toLocaleDateString()}</td>
+        <td>
+          <select onchange="updateOrder(${o.id},this.value)" class="form" style="padding:0.4rem 0.5rem;font-size:0.7rem">
+            <option value="">Update…</option>
+            <option value="confirmed">Confirm</option>
+            <option value="shipped">Mark shipped</option>
+            <option value="delivered">Mark delivered</option>
+            <option value="cancelled">Cancel</option>
+          </select>
+        </td>
+      </tr>`).join('')}</tbody></table>`;
+}
+
+async function updateOrder(id,status){
+  if(!status) return;
+  await api(`/admin/orders/${id}`,{method:'PATCH',body:{status}});
+  loadOrders();
+}
+
+async function loadProducts(){
+  const products=await api('/admin/products');
+  document.getElementById('productsWrap').innerHTML=`<table class="lum-table">
+    <thead><tr><th>Image</th><th>Name</th><th>Price</th><th>Stock</th><th>Status</th><th></th></tr></thead>
+    <tbody>${products.map(p=>`
+      <tr>
+        <td>${p.image?`<img src="${p.image}" style="width:46px;height:60px;object-fit:cover">`:''}</td>
+        <td><strong>${p.name}</strong><br><span class="muted">${p.note||''}</span></td>
+        <td>${fmt(p.price)}</td>
+        <td>${p.stock}</td>
+        <td><span class="badge ${p.active?'badge-confirmed':'badge-cancelled'}">${p.active?'active':'hidden'}</span></td>
+        <td class="row-actions">
+          <button class="btn btn-sm" onclick='openProductForm(${JSON.stringify(p)})'>Edit</button>
+          <button class="btn btn-sm btn-ghost" onclick="deleteProduct(${p.id})">Hide</button>
+        </td>
+      </tr>`).join('')}</tbody></table>`;
+}
+
+function openProductForm(p){
+  const f=document.forms.prodForm;
+  f.reset();
+  document.getElementById('prodTitle').textContent=p?'Edit product':'Add product';
+  if(p){
+    for(const k of ['id','slug','name','note','description','price','image','badge','card_class','glow_class','stock']) if(f[k]) f[k].value=p[k]??'';
+    f.active.value=String(p.active);
+  } else {
+    f.id.value=''; f.active.value='1'; f.card_class.value='card-bg-1'; f.glow_class.value='glow-1'; f.stock.value=100;
+  }
+  document.getElementById('prodModal').style.display='flex';
+}
+function closeProdModal(){ document.getElementById('prodModal').style.display='none'; }
+
+document.getElementById('prodForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const fd=new FormData(e.target); const data=Object.fromEntries(fd);
+  data.price=Number(data.price); data.stock=Number(data.stock); data.active=Number(data.active);
+  const id=data.id; delete data.id;
+  try{
+    if(id) await api(`/admin/products/${id}`,{method:'PUT',body:data});
+    else await api('/admin/products',{method:'POST',body:data});
+    closeProdModal(); loadProducts();
+  }catch(err){ document.getElementById('prodMsg').innerHTML=`<div class="alert alert-error">${err.message}</div>`; }
+});
+
+async function deleteProduct(id){
+  if(!confirm('Hide this product?')) return;
+  await api(`/admin/products/${id}`,{method:'DELETE'});
+  loadProducts();
+}
+
+async function loadMessages(){
+  const msgs=await api('/admin/contacts');
+  if(!msgs.length){ document.getElementById('messagesWrap').innerHTML='<p class="muted">No messages.</p>'; return; }
+  document.getElementById('messagesWrap').innerHTML=msgs.map(m=>`
+    <div class="order-card">
+      <div class="head">
+        <h4>${m.name} ${m.read_at?'':'<span class="badge">new</span>'}</h4>
+        <span class="muted">${new Date(m.created_at).toLocaleString()}</span>
+      </div>
+      <p class="muted">${m.email||''} ${m.phone?'· '+m.phone:''}</p>
+      <p style="margin-top:0.6rem;color:var(--text-pale)">${m.message}</p>
+      <div class="row-actions" style="margin-top:0.8rem">
+        ${m.read_at?'':`<button class="btn btn-sm" onclick="markRead(${m.id})">Mark read</button>`}
+        <button class="btn btn-sm btn-ghost" onclick="deleteMsg(${m.id})">Delete</button>
+      </div>
+    </div>`).join('');
+}
+async function markRead(id){ await api(`/admin/contacts/${id}/read`,{method:'PATCH'}); loadMessages(); }
+async function deleteMsg(id){ if(confirm('Delete?')){ await api(`/admin/contacts/${id}`,{method:'DELETE'}); loadMessages(); } }
+
+init();
+</script>
+</body>
+</html>

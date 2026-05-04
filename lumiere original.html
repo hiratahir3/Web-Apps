@@ -125,8 +125,8 @@
   .hero-eyebrow::before,.hero-eyebrow::after{content:'';width:50px;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
   .hero-title{
     font-family:'Cormorant Garamond',serif;
-    font-size:clamp(3.5rem,8vw,7rem);
-    font-weight:300;line-height:1;letter-spacing:0.08em;
+    font-size:clamp(5rem,10vw,9rem);
+    font-weight:300;line-height:1;letter-spacing:0.09em;
     color:var(--cream);margin-bottom:0.2rem;
   }
   .hero-title span{color:var(--gold-light);font-style:italic;font-size:clamp(3.2rem,7vw,6rem);}
@@ -175,11 +175,11 @@
 
   /* SCROLL INDICATOR */
   .scroll-hint{
-    position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);
+    position:absolute;bottom:0.2rem;left:50%;transform:translateX(-50%);
     display:flex;flex-direction:column;align-items:center;gap:0.6rem;
     opacity:0;animation:heroReveal 2s 3.2s ease forwards;
   }
-  .scroll-hint span{font-size:0.55rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--text-dim)}
+  .scroll-hint span{font-size:0.6rem;letter-spacing:0.4em;text-transform:uppercase;color:var(--text-dim)}
   .scroll-line{width:1px;height:50px;background:linear-gradient(to bottom,var(--gold),transparent);animation:scrollDrop 2s 4s infinite ease}
   @keyframes scrollDrop{
     0%{transform:scaleY(0);transform-origin:top;opacity:1}
@@ -262,10 +262,25 @@
   .card-bg-2{background:radial-gradient(ellipse 80% 60% at 50% 30%,#1A1A1A 0%,#0D0D0D 60%,#030303 100%)}
   .card-bg-3{background:radial-gradient(ellipse 80% 60% at 50% 30%,#3D2E1A 0%,#1E180E 60%,#0D0A05 100%)}
   .card-candle{
-    position:absolute;bottom:0;left:50%;transform:translateX(-50%);
-    width:60%;height:70%;
-    display:flex;align-items:flex-end;justify-content:center;
-    transition:transform 0.6s ease;
+    position:absolute;
+    bottom:0;
+    left:50%;
+    transform:translateX(-50%);
+    width:100%;
+    height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+  }
+ .product-img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: cover;
+  }
+  .product-card:hover {
+    transform: scale(1.05);
+    filter: brightness(1.05);
   }
   .product-card:hover .card-candle{transform:translateX(-50%) translateY(-8px)}
   .card-glow{
@@ -383,7 +398,7 @@
   .sound-toggle:hover{border-color:rgba(198,162,93,0.5);box-shadow:0 0 20px rgba(198,162,93,0.1)}
   .sound-toggle svg{width:16px;height:16px;stroke:var(--gold);fill:none}
 
-  /* CTA SECTION */
+  /*  SECTION */
   #cta{padding:10rem 0;position:relative;overflow:hidden;text-align:center}
   .cta-inner{position:relative;z-index:2;max-width:700px;margin:0 auto;padding:0 2rem}
   .cta-title{
@@ -429,8 +444,8 @@
     transition:opacity 0.8s,visibility 0.8s;
   }
   #loader.done{opacity:0;visibility:hidden}
-  .loader-brand{font-family:'Cormorant Garamond',serif;font-size:1.2rem;letter-spacing:0.5em;text-transform:uppercase;color:var(--gold);font-weight:300}
-  .loader-bar{width:120px;height:1px;background:rgba(198,162,93,0.15);position:relative;overflow:hidden}
+  .loader-brand{font-family:'Cormorant Garamond',serif;font-size:1.2rem;letter-spacing:0.5em;text-transform:uppercase;color:var(--gold);font-weight:300;position:centre top;}
+  .loader-bar{width:200px;height:1px;background:rgba(198,162,93,0.15);position:relative;overflow:hidden}
   .loader-fill{position:absolute;top:0;left:0;height:100%;background:var(--gold);width:0;animation:loadFill 1.6s ease forwards}
   @keyframes loadFill{to{width:100%}}
 
@@ -441,7 +456,7 @@
     background:radial-gradient(ellipse at 50% 80%,#fff 0%,#FFD166 20%,#FF8C42 50%,transparent 80%);
     border-radius:50% 50% 20% 20%;
     transform-origin:50% 100%;
-    animation:flicker 2s ease-in-out infinite;
+    animation:flicker 1s ease-in-out infinite;
     filter:blur(0.5px);
     box-shadow:0 0 8px 2px rgba(255,180,60,0.4),0 0 20px 5px rgba(255,120,30,0.2);
   }
@@ -457,7 +472,7 @@
     background:radial-gradient(circle,rgba(255,180,60,0.35) 0%,transparent 70%);
     border-radius:50%;
     top:-30px;left:-16px;
-    animation:glowPulse 2s ease-in-out infinite;
+    animation:glowPulse 1s ease-in-out infinite;
   }
   @keyframes glowPulse{
     0%,100%{opacity:0.8;transform:scale(1)}
@@ -516,9 +531,7 @@
 
   <div class="hero-text">
     <div class="hero-eyebrow">A Luxury Candle House</div>
-    <p class="hero-sub"></p>
-    <h1 class="hero-title">LUMIÈRE<br><span>by Yasra</span></h1>
-    <p class="hero-sub"></p>
+    <h1 class="hero-title">LUMIÈRE<br></h1>
     <p class="hero-sub1">"a quiet glow for your moments"</p>
     <div class="hero-cta">
       <a href="#collection" class="btn-gold">Shop Collection</a>
@@ -570,49 +583,9 @@
         <div class="card-glow glow-1"></div>
         <div class="card-label">Bestseller</div>
         <div class="card-candle">
-          <svg viewBox="0 0 160 280" class="candle-svg" xmlns="http://www.w3.org/2000/svg">
-            <!-- Flame -->
-            <ellipse cx="80" cy="35" rx="12" ry="18" fill="url(#flame1)" opacity="0.95"/>
-            <ellipse cx="80" cy="42" rx="6" ry="10" fill="rgba(255,255,255,0.8)"/>
-            <ellipse cx="80" cy="50" rx="18" ry="22" fill="url(#glow1)" opacity="0.5"/>
-            <!-- Wick -->
-            <rect x="79" y="50" width="2" height="12" fill="#333" rx="1"/>
-            <!-- Wax Pool -->
-            <ellipse cx="80" cy="68" rx="28" ry="6" fill="rgba(80,20,30,0.8)"/>
-            <!-- Candle Body -->
-            <rect x="52" y="68" width="56" height="170" rx="4" fill="url(#body1)"/>
-            <!-- Jar highlight -->
-            <rect x="52" y="68" width="12" height="170" rx="4" fill="rgba(255,255,255,0.04)"/>
-            <!-- Label -->
-            <rect x="62" y="140" width="36" height="60" rx="2" fill="rgba(198,162,93,0.1)" stroke="rgba(198,162,93,0.3)" stroke-width="0.5"/>
-            <text x="80" y="162" text-anchor="middle" fill="rgba(198,162,93,0.7)" font-size="5" font-family="serif" letter-spacing="1">LUMIÈRE</text>
-            <text x="80" y="174" text-anchor="middle" fill="rgba(198,162,93,0.5)" font-size="4" font-family="serif" letter-spacing="0.5">by Yasra</text>
-            <!-- Base -->
-            <rect x="48" y="236" width="64" height="8" rx="3" fill="url(#base1)"/>
-            <defs>
-              <radialGradient id="flame1" cx="50%" cy="80%" r="50%">
-                <stop offset="0%" stop-color="#ffffff"/>
-                <stop offset="30%" stop-color="#FFD166"/>
-                <stop offset="70%" stop-color="#FF6B35"/>
-                <stop offset="100%" stop-color="transparent"/>
-              </radialGradient>
-              <radialGradient id="glow1" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stop-color="#FF8C42" stop-opacity="0.6"/>
-                <stop offset="100%" stop-color="transparent"/>
-              </radialGradient>
-              <linearGradient id="body1" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#1E0810"/>
-                <stop offset="30%" stop-color="#3D1520"/>
-                <stop offset="70%" stop-color="#3D1520"/>
-                <stop offset="100%" stop-color="#1E0810"/>
-              </linearGradient>
-              <linearGradient id="base1" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#150510"/>
-                <stop offset="50%" stop-color="#2A0A15"/>
-                <stop offset="100%" stop-color="#150510"/>
-              </linearGradient>
-            </defs>
-          </svg>
+          <div class="product-img">
+            <img src="images/mahroon.png" alt="Midnight Oud Candle" class="product-img">
+          </div>
         </div>
         <div class="card-info">
           <div class="card-name">Midnight Oud</div>
@@ -628,42 +601,9 @@
         <div class="card-glow glow-2"></div>
         <div class="card-label">New</div>
         <div class="card-candle">
-          <svg viewBox="0 0 160 280" class="candle-svg" xmlns="http://www.w3.org/2000/svg">
-            <ellipse cx="80" cy="35" rx="10" ry="16" fill="url(#flame2)" opacity="0.9"/>
-            <ellipse cx="80" cy="41" rx="5" ry="9" fill="rgba(255,255,255,0.75)"/>
-            <ellipse cx="80" cy="48" rx="16" ry="20" fill="url(#glow2)" opacity="0.45"/>
-            <rect x="79" y="48" width="2" height="14" fill="#222" rx="1"/>
-            <ellipse cx="80" cy="68" rx="26" ry="5" fill="rgba(30,30,30,0.8)"/>
-            <rect x="54" y="68" width="52" height="175" rx="4" fill="url(#body2)"/>
-            <rect x="54" y="68" width="10" height="175" rx="4" fill="rgba(255,255,255,0.03)"/>
-            <rect x="63" y="145" width="34" height="55" rx="2" fill="rgba(200,200,220,0.06)" stroke="rgba(200,200,220,0.2)" stroke-width="0.5"/>
-            <text x="80" y="165" text-anchor="middle" fill="rgba(200,200,220,0.5)" font-size="5" font-family="serif" letter-spacing="1">LUMIÈRE</text>
-            <text x="80" y="176" text-anchor="middle" fill="rgba(200,200,220,0.35)" font-size="4" font-family="serif" letter-spacing="0.5">by Yasra</text>
-            <rect x="50" y="241" width="60" height="7" rx="3" fill="url(#base2)"/>
-            <defs>
-              <radialGradient id="flame2" cx="50%" cy="80%" r="50%">
-                <stop offset="0%" stop-color="#ffffff"/>
-                <stop offset="30%" stop-color="#E8ECFF"/>
-                <stop offset="70%" stop-color="#8090FF"/>
-                <stop offset="100%" stop-color="transparent"/>
-              </radialGradient>
-              <radialGradient id="glow2" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stop-color="#6070CC" stop-opacity="0.5"/>
-                <stop offset="100%" stop-color="transparent"/>
-              </radialGradient>
-              <linearGradient id="body2" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#050505"/>
-                <stop offset="30%" stop-color="#181818"/>
-                <stop offset="70%" stop-color="#181818"/>
-                <stop offset="100%" stop-color="#050505"/>
-              </linearGradient>
-              <linearGradient id="base2" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#050505"/>
-                <stop offset="50%" stop-color="#141414"/>
-                <stop offset="100%" stop-color="#050505"/>
-              </linearGradient>
-            </defs>
-          </svg>
+          <div class="product-img">
+            <img src="images/black.jpeg" alt="Midnight Oud Candle" class="product-img">
+          </div>
         </div>
         <div class="card-info">
           <div class="card-name">Noir Essence</div>
@@ -679,42 +619,9 @@
         <div class="card-glow glow-3"></div>
         <div class="card-label">Limited</div>
         <div class="card-candle">
-          <svg viewBox="0 0 160 280" class="candle-svg" xmlns="http://www.w3.org/2000/svg">
-            <ellipse cx="80" cy="36" rx="11" ry="17" fill="url(#flame3)" opacity="0.92"/>
-            <ellipse cx="80" cy="42" rx="5" ry="9" fill="rgba(255,255,255,0.8)"/>
-            <ellipse cx="80" cy="50" rx="17" ry="21" fill="url(#glow3)" opacity="0.4"/>
-            <rect x="79" y="50" width="2" height="13" fill="#4A3520" rx="1"/>
-            <ellipse cx="80" cy="68" rx="27" ry="5.5" fill="rgba(200,180,140,0.6)"/>
-            <rect x="53" y="68" width="54" height="172" rx="4" fill="url(#body3)"/>
-            <rect x="53" y="68" width="11" height="172" rx="4" fill="rgba(255,255,255,0.05)"/>
-            <rect x="63" y="142" width="34" height="58" rx="2" fill="rgba(198,162,93,0.08)" stroke="rgba(198,162,93,0.25)" stroke-width="0.5"/>
-            <text x="80" y="163" text-anchor="middle" fill="rgba(198,162,93,0.6)" font-size="5" font-family="serif" letter-spacing="1">LUMIÈRE</text>
-            <text x="80" y="174" text-anchor="middle" fill="rgba(198,162,93,0.4)" font-size="4" font-family="serif" letter-spacing="0.5">by Yasra</text>
-            <rect x="49" y="238" width="62" height="8" rx="3" fill="url(#base3)"/>
-            <defs>
-              <radialGradient id="flame3" cx="50%" cy="80%" r="50%">
-                <stop offset="0%" stop-color="#ffffff"/>
-                <stop offset="30%" stop-color="#FFECC0"/>
-                <stop offset="70%" stop-color="#FFB347"/>
-                <stop offset="100%" stop-color="transparent"/>
-              </radialGradient>
-              <radialGradient id="glow3" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stop-color="#D4A04A" stop-opacity="0.5"/>
-                <stop offset="100%" stop-color="transparent"/>
-              </radialGradient>
-              <linearGradient id="body3" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#2A1E10"/>
-                <stop offset="30%" stop-color="#4A3520"/>
-                <stop offset="70%" stop-color="#4A3520"/>
-                <stop offset="100%" stop-color="#2A1E10"/>
-              </linearGradient>
-              <linearGradient id="base3" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#1E150A"/>
-                <stop offset="50%" stop-color="#382818"/>
-                <stop offset="100%" stop-color="#1E150A"/>
-              </linearGradient>
-            </defs>
-          </svg>
+          <div class="product-img">
+            <img src="images/beige.jpeg" alt="Midnight Oud Candle" class="product-img">
+          </div>
         </div>
         <div class="card-info">
           <div class="card-name">Vanilla Veil</div>
