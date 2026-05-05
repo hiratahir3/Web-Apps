@@ -4,7 +4,15 @@ const db = require('../db');
 const router = express.Router();
 
 router.get('/', (req, res) => {
-  const rows = db.prepare('SELECT * FROM products WHERE active = 1 ORDER BY id ASC').all();
+  const { category } = req.query;
+  const rows = category
+    ? db.prepare('SELECT * FROM products WHERE active = 1 AND category = ? ORDER BY id ASC').all(category)
+    : db.prepare("SELECT * FROM products WHERE active = 1 AND category != 'gift_set' ORDER BY id ASC").all();
+  res.json(rows);
+});
+
+router.get('/gift-sets', (req, res) => {
+  const rows = db.prepare("SELECT * FROM products WHERE active = 1 AND category = 'gift_set' ORDER BY id ASC").all();
   res.json(rows);
 });
 

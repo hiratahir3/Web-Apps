@@ -21,21 +21,50 @@ router.get('/products', (_req, res) => {
 });
 
 router.post('/products', (req, res) => {
-  const { slug, name, note, description, price, image, badge, card_class, glow_class, stock, active } = req.body || {};
+  const { slug, name, note, description, price, image, badge, category, card_class, glow_class, stock, active } = req.body || {};
   if (!slug || !name || !price) return res.status(400).json({ error: 'slug, name, price required' });
   try {
-    const info = db.prepare(`INSERT INTO products (slug,name,note,description,price,image,badge,card_class,glow_class,stock,active)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?)`).run(slug, name, note || null, description || null, price, image || null,
-        badge || null, card_class || 'card-bg-1', glow_class || 'glow-1', stock ?? 100, active ?? 1);
+    const info = db.prepare(`INSERT INTO products (slug,name,note,description,price,image,badge,category,card_class,glow_class,stock,active)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`).run(slug, name, note || null, description || null, price, image || null,
+        badge || null, category || 'candle', card_class || 'card-bg-1', glow_class || 'glow-1', stock ?? 100, active ?? 1);
     res.json({ id: info.lastInsertRowid });
   } catch (e) { res.status(400).json({ error: e.message }); }
 });
 
 router.put('/products/:id', (req, res) => {
-  const { slug, name, note, description, price, image, badge, card_class, glow_class, stock, active } = req.body || {};
-  db.prepare(`UPDATE products SET slug=?,name=?,note=?,description=?,price=?,image=?,badge=?,card_class=?,glow_class=?,stock=?,active=? WHERE id=?`)
+  const { slug, name, note, description, price, image, badge, category, card_class, glow_class, stock, active } = req.body || {};
+  db.prepare(`UPDATE products SET slug=?,name=?,note=?,description=?,price=?,image=?,badge=?,category=?,card_class=?,glow_class=?,stock=?,active=? WHERE id=?`)
     .run(slug, name, note || null, description || null, price, image || null, badge || null,
-      card_class || 'card-bg-1', glow_class || 'glow-1', stock ?? 100, active ?? 1, req.params.id);
+      category || 'candle', card_class || 'card-bg-1', glow_class || 'glow-1', stock ?? 100, active ?? 1, req.params.id);
+  res.json({ ok: true });
+});
+
+// --- Gift Sets ---
+router.get('/gift-sets', (_req, res) => {
+  res.json(db.prepare("SELECT * FROM products WHERE category = 'gift_set' ORDER BY id ASC").all());
+});
+
+router.post('/gift-sets', (req, res) => {
+  const { slug, name, note, description, price, image, badge, card_class, glow_class, stock, active } = req.body || {};
+  if (!slug || !name || !price) return res.status(400).json({ error: 'slug, name, price required' });
+  try {
+    const info = db.prepare(`INSERT INTO products (slug,name,note,description,price,image,badge,category,card_class,glow_class,stock,active)
+      VALUES (?,?,?,?,?,?,?,'gift_set',?,?,?,?)`).run(slug, name, note || null, description || null, price, image || null,
+        badge || null, card_class || 'card-bg-3', glow_class || 'glow-3', stock ?? 50, active ?? 1);
+    res.json({ id: info.lastInsertRowid });
+  } catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+router.put('/gift-sets/:id', (req, res) => {
+  const { slug, name, note, description, price, image, badge, card_class, glow_class, stock, active } = req.body || {};
+  db.prepare(`UPDATE products SET slug=?,name=?,note=?,description=?,price=?,image=?,badge=?,category='gift_set',card_class=?,glow_class=?,stock=?,active=? WHERE id=?`)
+    .run(slug, name, note || null, description || null, price, image || null, badge || null,
+      card_class || 'card-bg-3', glow_class || 'glow-3', stock ?? 50, active ?? 1, req.params.id);
+  res.json({ ok: true });
+});
+
+router.delete('/gift-sets/:id', (req, res) => {
+  db.prepare('UPDATE products SET active = 0 WHERE id = ?').run(req.params.id);
   res.json({ ok: true });
 });
 
