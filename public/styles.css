@@ -130,3 +130,32 @@ body:has(.cart-drawer.open) .cart-overlay{opacity:1;pointer-events:auto}
 .order-card .head h4{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:300;color:var(--cream)}
 .order-card ul{list-style:none;font-size:0.8rem;color:var(--text-pale)}
 .order-card ul li{padding:0.4rem 0;border-bottom:1px dashed rgba(198,162,93,0.1)}
+
+/* ── Admin bright-mode overrides (scope to .admin-page body) ── */
+body.admin-page{background:#1f0609}
+body.admin-page .admin-side{background:#160305;border-right:1px solid rgba(198,162,93,0.25)}
+body.admin-page .admin-side h2{color:#D4B870;letter-spacing:0.35em}
+body.admin-page .admin-side a{color:rgba(228,198,148,0.88)}
+body.admin-page .admin-side a:hover,body.admin-page .admin-side a.active{color:#D4B870;border-left-color:#D4B870;background:rgba(198,162,93,0.12)}
+body.admin-page .admin-main{background:#1f0609;min-height:100vh}
+body.admin-page .stat{background:rgba(198,162,93,0.1);border:1px solid rgba(198,162,93,0.26)}
+body.admin-page .stat-label{color:rgba(232,204,152,0.92);font-size:0.58rem}
+body.admin-page .stat-value{color:#EAC870;font-size:2.1rem}
+body.admin-page .page-title{color:#EDD8A8}
+body.admin-page .page-title em{color:#E2C98A}
+body.admin-page .page-sub{color:#C6A25D}
+body.admin-page .muted{color:rgba(218,188,138,0.88)}
+body.admin-page .lum-table th{color:#D4B870}
+body.admin-page .lum-table td{color:rgba(245,237,216,0.94)}
+body.admin-page .lum-table tr:hover td{background:rgba(198,162,93,0.08)}
+body.admin-page .lum-table{border-bottom:1px solid rgba(198,162,93,0.15)}
+body.admin-page .order-card{background:rgba(198,162,93,0.08);border:1px solid rgba(198,162,93,0.24)}
+body.admin-page .order-card .head h4{color:#EDD8A8}
+body.admin-page .order-card p{color:rgba(245,237,216,0.88)}
+body.admin-page .form input,body.admin-page .form textarea,body.admin-page .form select{background:rgba(16,4,6,0.55);border-color:rgba(198,162,93,0.32);color:var(--cream)}
+body.admin-page .form label{color:rgba(232,204,152,0.92)}
+body.admin-page #prodModal>div{background:#200508;border-color:rgba(198,162,93,0.3)}
+body.admin-page #prodModal h3{color:#D4B870}
+body.admin-page .badge{background:rgba(198,162,93,0.12)}
+body.admin-page h3[style*="color:var(--gold-light)"]{color:#D4B870!important}
+body.admin-page select.form{background:rgba(16,4,6,0.55);border-color:rgba(198,162,93,0.3);color:var(--cream);padding:0.5rem 0.7rem}

@@ -5,17 +5,37 @@
 <title>Admin — Lumière by Yasra</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400&family=Jost:wght@200;300;400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/styles.css">
+<style>
+  /* Extra admin readability polish */
+  .admin-side .section-divider{height:1px;background:rgba(198,162,93,0.15);margin:0.6rem 0.5rem}
+  .admin-side .nav-group-label{font-size:0.5rem;letter-spacing:0.4em;text-transform:uppercase;color:rgba(198,162,93,0.45);padding:0.4rem 0.9rem 0;margin-top:0.4rem}
+  .gift-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:300;display:none;align-items:center;justify-content:center}
+  .gift-modal-overlay.open{display:flex}
+  .gift-modal-box{background:#200508;border:1px solid rgba(198,162,93,0.3);padding:2rem;max-width:520px;width:90%;max-height:90vh;overflow-y:auto}
+  .gift-modal-box h3{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.4rem;color:#D4B870;margin-bottom:1.2rem}
+  .empty-state{padding:3rem 0;text-align:center;color:rgba(218,188,138,0.6);font-size:0.8rem;letter-spacing:0.15em}
+  .empty-state .icon{font-size:2rem;margin-bottom:1rem;opacity:0.4}
+  .gift-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;margin-top:1.2rem}
+  .gift-admin-card{background:rgba(198,162,93,0.07);border:1px solid rgba(198,162,93,0.22);padding:1.2rem;display:flex;gap:1rem;align-items:flex-start}
+  .gift-admin-card img{width:60px;height:75px;object-fit:cover;flex-shrink:0;background:#2A0A0F}
+  .gift-admin-card .info{flex:1;min-width:0}
+  .gift-admin-card .name{font-family:'Cormorant Garamond',serif;font-size:1rem;color:#EDD8A8;margin-bottom:0.2rem}
+  .gift-admin-card .note{font-size:0.65rem;color:rgba(218,188,138,0.75);letter-spacing:0.1em;margin-bottom:0.4rem}
+  .gift-admin-card .price{font-size:0.8rem;color:#D4B870;margin-bottom:0.6rem}
+  .gift-admin-card .actions{display:flex;gap:0.5rem;flex-wrap:wrap}
+  .overview-section-title{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.3rem;color:#D4B870;margin:2rem 0 0.8rem;padding-bottom:0.4rem;border-bottom:1px solid rgba(198,162,93,0.15)}
+</style>
 </head>
-<body>
+<body class="admin-page">
 
 <!-- LOGIN -->
 <section id="loginView" class="page" style="display:none">
   <main class="page-main" style="max-width:480px">
-    <div class="page-sub">— Lumière —</div>
-    <h1 class="page-title">Admin <em>Sign In</em></h1>
+    <div class="page-sub">— Lumière Admin —</div>
+    <h1 class="page-title">Sign <em>In</em></h1>
     <form id="adminLogin" class="form" style="margin-top:2rem">
-      <div><label>Email</label><input name="email" type="email" required></div>
-      <div><label>Password</label><input name="password" type="password" required></div>
+      <div><label>Email</label><input name="email" type="email" required autocomplete="email"></div>
+      <div><label>Password</label><input name="password" type="password" required autocomplete="current-password"></div>
       <div id="loginMsg"></div>
       <button class="btn btn-primary btn-block" type="submit">Sign In</button>
     </form>
@@ -30,35 +50,51 @@
       <h2>Lumière</h2>
       <a class="active" data-tab="overview" onclick="showTab('overview')">Overview</a>
       <a data-tab="orders" onclick="showTab('orders')">Orders</a>
-      <a data-tab="products" onclick="showTab('products')">Products</a>
+      <div class="section-divider"></div>
+      <div class="nav-group-label">Catalogue</div>
+      <a data-tab="products" onclick="showTab('products')">Candles</a>
+      <a data-tab="giftsets" onclick="showTab('giftsets')">Gift Sets</a>
+      <div class="section-divider"></div>
       <a data-tab="messages" onclick="showTab('messages')">Messages</a>
       <a class="logout" onclick="adminLogout()">Sign out →</a>
     </aside>
 
     <main class="admin-main">
+
       <!-- Overview -->
       <div class="tab-section active" data-section="overview">
         <h1 class="page-title" style="margin-bottom:2rem">Overview</h1>
         <div class="stats-grid" id="stats"></div>
-        <h3 style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.4rem;color:var(--gold-light);margin:1rem 0">Recent orders</h3>
+        <div class="overview-section-title">Recent orders</div>
         <div id="recent"></div>
       </div>
 
       <!-- Orders -->
       <div class="tab-section" data-section="orders">
         <h1 class="page-title" style="margin-bottom:1.4rem">Orders</h1>
-        <div style="margin-bottom:1rem"><select id="statusFilter" class="form" style="max-width:240px;display:inline-block">
-          <option value="">All statuses</option>
-          <option>pending</option><option>confirmed</option><option>shipped</option><option>delivered</option><option>cancelled</option>
-        </select></div>
+        <div style="margin-bottom:1rem">
+          <select id="statusFilter" class="form" style="max-width:240px;display:inline-block">
+            <option value="">All statuses</option>
+            <option>pending</option><option>confirmed</option><option>shipped</option><option>delivered</option><option>cancelled</option>
+          </select>
+        </div>
         <div id="ordersWrap"></div>
       </div>
 
-      <!-- Products -->
+      <!-- Candles / Products -->
       <div class="tab-section" data-section="products">
-        <h1 class="page-title" style="margin-bottom:1.4rem">Products</h1>
-        <button class="btn btn-primary btn-sm" onclick="openProductForm()">+ Add product</button>
+        <h1 class="page-title" style="margin-bottom:0.4rem">Candles</h1>
+        <p class="muted" style="margin-bottom:1.2rem">Manage individual candle products</p>
+        <button class="btn btn-primary btn-sm" onclick="openProductForm()">+ Add candle</button>
         <div id="productsWrap" style="margin-top:1.4rem"></div>
+      </div>
+
+      <!-- Gift Sets -->
+      <div class="tab-section" data-section="giftsets">
+        <h1 class="page-title" style="margin-bottom:0.4rem">Gift <em>Sets</em></h1>
+        <p class="muted" style="margin-bottom:1.2rem">Manage curated gift sets — shown in the gifting section of the main site</p>
+        <button class="btn btn-primary btn-sm" onclick="openGiftForm()">+ Add gift set</button>
+        <div id="giftSetsWrap" style="margin-top:1.4rem"></div>
       </div>
 
       <!-- Messages -->
@@ -66,39 +102,75 @@
         <h1 class="page-title" style="margin-bottom:1.4rem">Messages</h1>
         <div id="messagesWrap"></div>
       </div>
+
     </main>
   </div>
 </section>
 
-<!-- Product modal -->
-<div id="prodModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:300;align-items:center;justify-content:center">
-  <div style="background:#1A0508;border:1px solid rgba(198,162,93,0.2);padding:2rem;max-width:520px;width:90%;max-height:90vh;overflow-y:auto">
-    <h3 id="prodTitle" style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.4rem;color:var(--gold-light);margin-bottom:1.2rem">Add product</h3>
+<!-- Candle Product modal -->
+<div id="prodModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:300;align-items:center;justify-content:center">
+  <div style="background:#200508;border:1px solid rgba(198,162,93,0.3);padding:2rem;max-width:540px;width:90%;max-height:90vh;overflow-y:auto">
+    <h3 id="prodTitle" style="font-family:'Cormorant Garamond',serif;font-weight:300;font-size:1.4rem;color:#D4B870;margin-bottom:1.2rem">Add candle</h3>
     <form id="prodForm" class="form" style="max-width:none">
       <input type="hidden" name="id">
+      <input type="hidden" name="category" value="candle">
       <div class="form-row">
-        <div><label>Slug</label><input name="slug" required></div>
-        <div><label>Name</label><input name="name" required></div>
+        <div><label>Slug</label><input name="slug" required placeholder="midnight-oud"></div>
+        <div><label>Name</label><input name="name" required placeholder="Midnight Oud"></div>
       </div>
       <div><label>Tagline / Note</label><input name="note" placeholder="Dark Rose · Oud · Amber"></div>
-      <div><label>Description</label><textarea name="description"></textarea></div>
+      <div><label>Description</label><textarea name="description" placeholder="Describe the scent, experience, character…"></textarea></div>
       <div class="form-row">
-        <div><label>Price (PKR)</label><input name="price" type="number" required min="0"></div>
+        <div><label>Price (PKR)</label><input name="price" type="number" required min="0" placeholder="3200"></div>
         <div><label>Stock</label><input name="stock" type="number" value="100"></div>
       </div>
       <div><label>Image URL</label><input name="image" placeholder="/images/mahroon.png"></div>
       <div class="form-row">
         <div><label>Badge</label><input name="badge" placeholder="Bestseller / New / Limited"></div>
-        <div><label>Active</label><select name="active"><option value="1">Active</option><option value="0">Hidden</option></select></div>
+        <div><label>Status</label><select name="active"><option value="1">Active</option><option value="0">Hidden</option></select></div>
       </div>
       <div class="form-row">
         <div><label>Card style</label><select name="card_class"><option>card-bg-1</option><option>card-bg-2</option><option>card-bg-3</option></select></div>
         <div><label>Glow</label><select name="glow_class"><option>glow-1</option><option>glow-2</option><option>glow-3</option></select></div>
       </div>
       <div id="prodMsg"></div>
-      <div style="display:flex;gap:0.8rem">
+      <div style="display:flex;gap:0.8rem;margin-top:0.4rem">
         <button class="btn btn-primary" type="submit">Save</button>
         <button class="btn btn-ghost" type="button" onclick="closeProdModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Gift Set modal -->
+<div id="giftModal" class="gift-modal-overlay">
+  <div class="gift-modal-box">
+    <h3 id="giftTitle">Add gift set</h3>
+    <form id="giftForm" class="form" style="max-width:none">
+      <input type="hidden" name="id">
+      <div class="form-row">
+        <div><label>Slug</label><input name="slug" required placeholder="signature-set"></div>
+        <div><label>Name</label><input name="name" required placeholder="The Signature Set"></div>
+      </div>
+      <div><label>Tagline / Contents</label><input name="note" placeholder="Candle + Fragrance Oil + Gift Box"></div>
+      <div><label>Description</label><textarea name="description" placeholder="What makes this set special?"></textarea></div>
+      <div class="form-row">
+        <div><label>Price (PKR)</label><input name="price" type="number" required min="0" placeholder="4800"></div>
+        <div><label>Stock</label><input name="stock" type="number" value="50"></div>
+      </div>
+      <div><label>Image URL</label><input name="image" placeholder="/images/luxury.png"></div>
+      <div class="form-row">
+        <div><label>Badge</label><input name="badge" placeholder="Gift / Limited / Bestseller"></div>
+        <div><label>Status</label><select name="active"><option value="1">Active</option><option value="0">Hidden</option></select></div>
+      </div>
+      <div class="form-row">
+        <div><label>Card style</label><select name="card_class"><option>card-bg-3</option><option>card-bg-1</option><option>card-bg-2</option></select></div>
+        <div><label>Glow</label><select name="glow_class"><option>glow-3</option><option>glow-1</option><option>glow-2</option></select></div>
+      </div>
+      <div id="giftMsg"></div>
+      <div style="display:flex;gap:0.8rem;margin-top:0.4rem">
+        <button class="btn btn-primary" type="submit">Save Gift Set</button>
+        <button class="btn btn-ghost" type="button" onclick="closeGiftModal()">Cancel</button>
       </div>
     </form>
   </div>
@@ -107,72 +179,81 @@
 <script src="/app.js"></script>
 <script>
 async function init(){
-  const me=await getMe();
-  if(me.admin){ showDash(); load('overview'); }
-  else { document.getElementById('loginView').style.display='block'; }
-}
-function showDash(){
-  document.getElementById('loginView').style.display='none';
-  document.getElementById('dashView').style.display='block';
+  const me = await getMe();
+  if(me && me.admin){ showDash(); load('overview'); }
+  else { document.getElementById('loginView').style.display = 'flex'; }
 }
 
-document.getElementById('adminLogin').addEventListener('submit',async e=>{
+function showDash(){
+  document.getElementById('loginView').style.display = 'none';
+  document.getElementById('dashView').style.display = 'block';
+}
+
+document.getElementById('adminLogin').addEventListener('submit', async e => {
   e.preventDefault();
-  const fd=new FormData(e.target); const msg=document.getElementById('loginMsg');
-  try{ await api('/auth/admin/login',{method:'POST',body:Object.fromEntries(fd)}); init(); }
-  catch(err){ msg.innerHTML=`<div class="alert alert-error">${err.message}</div>`; }
+  const fd = new FormData(e.target);
+  const msg = document.getElementById('loginMsg');
+  try {
+    await api('/auth/admin/login', { method:'POST', body:Object.fromEntries(fd) });
+    init();
+  } catch(err) {
+    msg.innerHTML = `<div class="alert alert-error">${err.message}</div>`;
+  }
 });
 
-async function adminLogout(){ await api('/auth/logout',{method:'POST'}); location.reload(); }
+async function adminLogout(){ await api('/auth/logout', {method:'POST'}); location.reload(); }
 
 function showTab(name){
-  document.querySelectorAll('.admin-side a[data-tab]').forEach(a=>a.classList.toggle('active',a.dataset.tab===name));
-  document.querySelectorAll('.tab-section').forEach(s=>s.classList.toggle('active',s.dataset.section===name));
+  document.querySelectorAll('.admin-side a[data-tab]').forEach(a => a.classList.toggle('active', a.dataset.tab === name));
+  document.querySelectorAll('.tab-section').forEach(s => s.classList.toggle('active', s.dataset.section === name));
   load(name);
 }
 
 async function load(tab){
-  if(tab==='overview') return loadOverview();
-  if(tab==='orders') return loadOrders();
-  if(tab==='products') return loadProducts();
-  if(tab==='messages') return loadMessages();
+  if(tab === 'overview') return loadOverview();
+  if(tab === 'orders') return loadOrders();
+  if(tab === 'products') return loadProducts();
+  if(tab === 'giftsets') return loadGiftSets();
+  if(tab === 'messages') return loadMessages();
 }
 
+// ── Overview ──
 async function loadOverview(){
-  const s=await api('/admin/summary');
-  document.getElementById('stats').innerHTML=`
+  const s = await api('/admin/summary');
+  document.getElementById('stats').innerHTML = `
     <div class="stat"><div class="stat-label">Total Orders</div><div class="stat-value">${s.orderCount}</div></div>
     <div class="stat"><div class="stat-label">Pending</div><div class="stat-value">${s.pending}</div></div>
     <div class="stat"><div class="stat-label">Revenue</div><div class="stat-value">${fmt(s.revenue)}</div></div>
     <div class="stat"><div class="stat-label">Products</div><div class="stat-value">${s.productCount}</div></div>
     <div class="stat"><div class="stat-label">Unread Messages</div><div class="stat-value">${s.messages}</div></div>`;
-  const orders=(await api('/admin/orders')).slice(0,8);
-  document.getElementById('recent').innerHTML=ordersTable(orders);
+  const orders = (await api('/admin/orders')).slice(0, 8);
+  document.getElementById('recent').innerHTML = ordersTable(orders);
 }
 
-let cachedOrders=[];
+// ── Orders ──
+let cachedOrders = [];
 async function loadOrders(){
-  const status=document.getElementById('statusFilter').value;
-  cachedOrders=await api('/admin/orders'+(status?`?status=${status}`:''));
-  document.getElementById('ordersWrap').innerHTML=ordersTable(cachedOrders);
+  const status = document.getElementById('statusFilter').value;
+  cachedOrders = await api('/admin/orders' + (status ? `?status=${status}` : ''));
+  document.getElementById('ordersWrap').innerHTML = ordersTable(cachedOrders);
 }
-document.getElementById('statusFilter').addEventListener('change',loadOrders);
+document.getElementById('statusFilter').addEventListener('change', loadOrders);
 
 function ordersTable(orders){
-  if(!orders.length) return '<p class="muted">No orders.</p>';
-  return `<table class="lum-table">
-    <thead><tr><th>#</th><th>Customer</th><th>Items</th><th>Total</th><th>Pay</th><th>Status</th><th>Date</th><th></th></tr></thead>
-    <tbody>${orders.map(o=>`
+  if(!orders.length) return '<div class="empty-state"><div class="icon">✦</div>No orders found.</div>';
+  return `<div style="overflow-x:auto"><table class="lum-table">
+    <thead><tr><th>#</th><th>Customer</th><th>Items</th><th>Total</th><th>Pay</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+    <tbody>${orders.map(o => `
       <tr>
         <td>${o.id}</td>
-        <td>${o.customer_name}<br><span class="muted">${o.customer_phone||''}</span></td>
-        <td>${o.items.map(i=>`${i.name}×${i.qty}`).join(', ')}</td>
+        <td>${escHtml(o.customer_name)}<br><span class="muted">${escHtml(o.customer_phone || '')}</span></td>
+        <td style="max-width:200px">${o.items.map(i => `${escHtml(i.name)}×${i.qty}`).join(', ')}</td>
         <td>${fmt(o.total)}</td>
         <td><span class="badge badge-${o.payment_status}">${o.payment_status}</span></td>
         <td><span class="badge badge-${o.status}">${o.status}</span></td>
         <td class="muted">${new Date(o.created_at).toLocaleDateString()}</td>
         <td>
-          <select onchange="updateOrder(${o.id},this.value)" class="form" style="padding:0.4rem 0.5rem;font-size:0.7rem">
+          <select onchange="updateOrder(${o.id},this.value)" class="form" style="padding:0.4rem 0.5rem;font-size:0.7rem;max-width:140px">
             <option value="">Update…</option>
             <option value="confirmed">Confirm</option>
             <option value="shipped">Mark shipped</option>
@@ -180,84 +261,160 @@ function ordersTable(orders){
             <option value="cancelled">Cancel</option>
           </select>
         </td>
-      </tr>`).join('')}</tbody></table>`;
+      </tr>`).join('')}</tbody></table></div>`;
 }
 
-async function updateOrder(id,status){
+async function updateOrder(id, status){
   if(!status) return;
-  await api(`/admin/orders/${id}`,{method:'PATCH',body:{status}});
+  await api(`/admin/orders/${id}`, { method:'PATCH', body:{status} });
   loadOrders();
 }
 
+// ── Candles / Products ──
 async function loadProducts(){
-  const products=await api('/admin/products');
-  document.getElementById('productsWrap').innerHTML=`<table class="lum-table">
-    <thead><tr><th>Image</th><th>Name</th><th>Price</th><th>Stock</th><th>Status</th><th></th></tr></thead>
-    <tbody>${products.map(p=>`
+  const products = await api('/admin/products');
+  const candles = products.filter(p => p.category !== 'gift_set');
+  if(!candles.length){
+    document.getElementById('productsWrap').innerHTML = '<div class="empty-state"><div class="icon">✦</div>No candles yet. Add your first candle.</div>';
+    return;
+  }
+  document.getElementById('productsWrap').innerHTML = `<div style="overflow-x:auto"><table class="lum-table">
+    <thead><tr><th>Image</th><th>Name</th><th>Note</th><th>Price</th><th>Stock</th><th>Status</th><th></th></tr></thead>
+    <tbody>${candles.map(p => `
       <tr>
-        <td>${p.image?`<img src="${p.image}" style="width:46px;height:60px;object-fit:cover">`:''}</td>
-        <td><strong>${p.name}</strong><br><span class="muted">${p.note||''}</span></td>
+        <td>${p.image ? `<img src="${escHtml(p.image)}" style="width:46px;height:60px;object-fit:cover;background:#2A0A0F">` : '<span class="muted">—</span>'}</td>
+        <td><strong style="color:rgba(245,237,216,0.95)">${escHtml(p.name)}</strong></td>
+        <td class="muted">${escHtml(p.note || '')}</td>
         <td>${fmt(p.price)}</td>
         <td>${p.stock}</td>
-        <td><span class="badge ${p.active?'badge-confirmed':'badge-cancelled'}">${p.active?'active':'hidden'}</span></td>
+        <td><span class="badge ${p.active ? 'badge-confirmed' : 'badge-cancelled'}">${p.active ? 'active' : 'hidden'}</span></td>
         <td class="row-actions">
           <button class="btn btn-sm" onclick='openProductForm(${JSON.stringify(p)})'>Edit</button>
           <button class="btn btn-sm btn-ghost" onclick="deleteProduct(${p.id})">Hide</button>
         </td>
-      </tr>`).join('')}</tbody></table>`;
+      </tr>`).join('')}</tbody></table></div>`;
 }
 
 function openProductForm(p){
-  const f=document.forms.prodForm;
+  const f = document.forms.prodForm;
   f.reset();
-  document.getElementById('prodTitle').textContent=p?'Edit product':'Add product';
+  document.getElementById('prodTitle').textContent = p ? 'Edit candle' : 'Add candle';
   if(p){
-    for(const k of ['id','slug','name','note','description','price','image','badge','card_class','glow_class','stock']) if(f[k]) f[k].value=p[k]??'';
-    f.active.value=String(p.active);
+    ['id','slug','name','note','description','price','image','badge','card_class','glow_class','stock'].forEach(k => { if(f[k]) f[k].value = p[k] ?? ''; });
+    f.active.value = String(p.active);
+    f.category.value = 'candle';
   } else {
-    f.id.value=''; f.active.value='1'; f.card_class.value='card-bg-1'; f.glow_class.value='glow-1'; f.stock.value=100;
+    f.id.value = ''; f.active.value = '1'; f.card_class.value = 'card-bg-1'; f.glow_class.value = 'glow-1'; f.stock.value = 100;
   }
-  document.getElementById('prodModal').style.display='flex';
+  document.getElementById('prodModal').style.display = 'flex';
 }
-function closeProdModal(){ document.getElementById('prodModal').style.display='none'; }
+function closeProdModal(){ document.getElementById('prodModal').style.display = 'none'; }
 
-document.getElementById('prodForm').addEventListener('submit',async e=>{
+document.getElementById('prodForm').addEventListener('submit', async e => {
   e.preventDefault();
-  const fd=new FormData(e.target); const data=Object.fromEntries(fd);
-  data.price=Number(data.price); data.stock=Number(data.stock); data.active=Number(data.active);
-  const id=data.id; delete data.id;
-  try{
-    if(id) await api(`/admin/products/${id}`,{method:'PUT',body:data});
-    else await api('/admin/products',{method:'POST',body:data});
+  const fd = new FormData(e.target);
+  const data = Object.fromEntries(fd);
+  data.price = Number(data.price); data.stock = Number(data.stock); data.active = Number(data.active);
+  const id = data.id; delete data.id;
+  const msgEl = document.getElementById('prodMsg');
+  try {
+    if(id) await api(`/admin/products/${id}`, {method:'PUT', body:data});
+    else await api('/admin/products', {method:'POST', body:data});
     closeProdModal(); loadProducts();
-  }catch(err){ document.getElementById('prodMsg').innerHTML=`<div class="alert alert-error">${err.message}</div>`; }
+  } catch(err) { msgEl.innerHTML = `<div class="alert alert-error">${escHtml(err.message)}</div>`; }
 });
 
 async function deleteProduct(id){
-  if(!confirm('Hide this product?')) return;
-  await api(`/admin/products/${id}`,{method:'DELETE'});
+  if(!confirm('Hide this candle from the store?')) return;
+  await api(`/admin/products/${id}`, {method:'DELETE'});
   loadProducts();
 }
 
+// ── Gift Sets ──
+async function loadGiftSets(){
+  const sets = await api('/admin/gift-sets');
+  const wrap = document.getElementById('giftSetsWrap');
+  if(!sets.length){
+    wrap.innerHTML = '<div class="empty-state"><div class="icon">🎁</div>No gift sets yet. Add your first curated gift set.</div>';
+    return;
+  }
+  wrap.innerHTML = `<div class="gift-card-grid">${sets.map(g => `
+    <div class="gift-admin-card">
+      ${g.image ? `<img src="${escHtml(g.image)}" alt="${escHtml(g.name)}">` : '<div style="width:60px;height:75px;background:rgba(198,162,93,0.1);flex-shrink:0"></div>'}
+      <div class="info">
+        <div class="name">${escHtml(g.name)}</div>
+        <div class="note">${escHtml(g.note || '')}</div>
+        <div class="price">${fmt(g.price)}</div>
+        <div style="margin-bottom:0.5rem"><span class="badge ${g.active ? 'badge-confirmed' : 'badge-cancelled'}">${g.active ? 'active' : 'hidden'}</span></div>
+        <div class="actions">
+          <button class="btn btn-sm" onclick='openGiftForm(${JSON.stringify(g)})'>Edit</button>
+          <button class="btn btn-sm btn-ghost" onclick="hideGiftSet(${g.id})">Hide</button>
+        </div>
+      </div>
+    </div>`).join('')}</div>`;
+}
+
+function openGiftForm(g){
+  const f = document.forms.giftForm;
+  f.reset();
+  document.getElementById('giftTitle').textContent = g ? 'Edit gift set' : 'Add gift set';
+  if(g){
+    ['id','slug','name','note','description','price','image','badge','card_class','glow_class','stock'].forEach(k => { if(f[k]) f[k].value = g[k] ?? ''; });
+    f.active.value = String(g.active);
+  } else {
+    f.id.value = ''; f.active.value = '1'; f.card_class.value = 'card-bg-3'; f.glow_class.value = 'glow-3'; f.stock.value = 50;
+  }
+  document.getElementById('giftModal').classList.add('open');
+}
+function closeGiftModal(){ document.getElementById('giftModal').classList.remove('open'); }
+
+document.getElementById('giftForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  const data = Object.fromEntries(fd);
+  data.price = Number(data.price); data.stock = Number(data.stock); data.active = Number(data.active);
+  const id = data.id; delete data.id;
+  const msgEl = document.getElementById('giftMsg');
+  try {
+    if(id) await api(`/admin/gift-sets/${id}`, {method:'PUT', body:data});
+    else await api('/admin/gift-sets', {method:'POST', body:data});
+    closeGiftModal(); loadGiftSets();
+  } catch(err) { msgEl.innerHTML = `<div class="alert alert-error">${escHtml(err.message)}</div>`; }
+});
+
+async function hideGiftSet(id){
+  if(!confirm('Hide this gift set from the store?')) return;
+  await api(`/admin/gift-sets/${id}`, {method:'DELETE'});
+  loadGiftSets();
+}
+
+// ── Messages ──
 async function loadMessages(){
-  const msgs=await api('/admin/contacts');
-  if(!msgs.length){ document.getElementById('messagesWrap').innerHTML='<p class="muted">No messages.</p>'; return; }
-  document.getElementById('messagesWrap').innerHTML=msgs.map(m=>`
+  const msgs = await api('/admin/contacts');
+  if(!msgs.length){ document.getElementById('messagesWrap').innerHTML = '<div class="empty-state"><div class="icon">✦</div>No messages yet.</div>'; return; }
+  document.getElementById('messagesWrap').innerHTML = msgs.map(m => `
     <div class="order-card">
       <div class="head">
-        <h4>${m.name} ${m.read_at?'':'<span class="badge">new</span>'}</h4>
+        <h4>${escHtml(m.name)} ${m.read_at ? '' : '<span class="badge" style="font-size:0.5rem">new</span>'}</h4>
         <span class="muted">${new Date(m.created_at).toLocaleString()}</span>
       </div>
-      <p class="muted">${m.email||''} ${m.phone?'· '+m.phone:''}</p>
-      <p style="margin-top:0.6rem;color:var(--text-pale)">${m.message}</p>
+      <p class="muted">${escHtml(m.email || '')} ${m.phone ? '· ' + escHtml(m.phone) : ''}</p>
+      <p style="margin-top:0.6rem;color:rgba(245,237,216,0.9);line-height:1.7">${escHtml(m.message)}</p>
       <div class="row-actions" style="margin-top:0.8rem">
-        ${m.read_at?'':`<button class="btn btn-sm" onclick="markRead(${m.id})">Mark read</button>`}
+        ${m.read_at ? '' : `<button class="btn btn-sm" onclick="markRead(${m.id})">Mark read</button>`}
         <button class="btn btn-sm btn-ghost" onclick="deleteMsg(${m.id})">Delete</button>
       </div>
     </div>`).join('');
 }
-async function markRead(id){ await api(`/admin/contacts/${id}/read`,{method:'PATCH'}); loadMessages(); }
-async function deleteMsg(id){ if(confirm('Delete?')){ await api(`/admin/contacts/${id}`,{method:'DELETE'}); loadMessages(); } }
+async function markRead(id){ await api(`/admin/contacts/${id}/read`, {method:'PATCH'}); loadMessages(); }
+async function deleteMsg(id){ if(confirm('Delete this message?')){ await api(`/admin/contacts/${id}`, {method:'DELETE'}); loadMessages(); } }
+
+// ── Helpers ──
+function escHtml(s){ return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// Close modals on overlay click
+document.getElementById('giftModal').addEventListener('click', e => { if(e.target === document.getElementById('giftModal')) closeGiftModal(); });
+document.getElementById('prodModal').addEventListener('click', e => { if(e.target === document.getElementById('prodModal')) closeProdModal(); });
 
 init();
 </script>
